@@ -1,0 +1,326 @@
+[
+{
+"posizione": 0,
+"nome": "Via!",
+"tipo": "speciale",
+"colore": null,
+"prezzo": null,
+"affitto": null,
+"descrizione": "Ricevi 200€ quando passi"
+},
+{
+"posizione": 1,
+"nome": "Vicolo Corto",
+"tipo": "proprietà",
+"colore": "marrone",
+"prezzo": 60,
+"affitto": 2
+},
+{
+"posizione": 2,
+"nome": "Probabilità",
+"tipo": "probabilità",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 3,
+"nome": "Vicolo Stretto",
+"tipo": "proprietà",
+"colore": "marrone",
+"prezzo": 60,
+"affitto": 4
+},
+{
+"posizione": 4,
+"nome": "Tassa Patrimoniale",
+"tipo": "tassa",
+"colore": null,
+"prezzo": null,
+"affitto": null,
+"descrizione": "Paga 200€"
+},
+{
+"posizione": 5,
+"nome": "Stazione Sud",
+"tipo": "stazione",
+"colore": null,
+"prezzo": 200,
+"affitto": 25
+},
+{
+"posizione": 6,
+"nome": "Bastioni Gran Sasso",
+"tipo": "proprietà",
+"colore": "celeste",
+"prezzo": 100,
+"affitto": 6
+},
+{
+"posizione": 7,
+"nome": "Imprevisti",
+"tipo": "imprevisto",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 8,
+"nome": "Viale Monterosa",
+"tipo": "proprietà",
+"colore": "celeste",
+"prezzo": 100,
+"affitto": 6
+},
+{
+"posizione": 9,
+"nome": "Viale Vesuvio",
+"tipo": "proprietà",
+"colore": "celeste",
+"prezzo": 120,
+"affitto": 8
+},
+{
+"posizione": 10,
+"nome": "In Prigione / Transito",
+"tipo": "speciale",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 11,
+"nome": "Via Accademia",
+"tipo": "proprietà",
+"colore": "rosa",
+"prezzo": 140,
+"affitto": 10
+},
+{
+"posizione": 12,
+"nome": "Società Elettrica",
+"tipo": "società",
+"colore": null,
+"prezzo": 150,
+"affitto": "variabile"
+},
+{
+"posizione": 13,
+"nome": "Corso Ateneo",
+"tipo": "proprietà",
+"colore": "rosa",
+"prezzo": 140,
+"affitto": 10
+},
+{
+"posizione": 14,
+"nome": "Largo Colombo",
+"tipo": "proprietà",
+"colore": "rosa",
+"prezzo": 160,
+"affitto": 12
+},
+{
+"posizione": 15,
+"nome": "Stazione Nord",
+"tipo": "stazione",
+"colore": null,
+"prezzo": 200,
+"affitto": 25
+},
+{
+"posizione": 16,
+"nome": "Viale Costantino",
+"tipo": "proprietà",
+"colore": "arancione",
+"prezzo": 180,
+"affitto": 14
+},
+{
+"posizione": 17,
+"nome": "Probabilità",
+"tipo": "probabilità",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 18,
+"nome": "Viale Traiano",
+"tipo": "proprietà",
+"colore": "arancione",
+"prezzo": 180,
+"affitto": 14
+},
+{
+"posizione": 19,
+"nome": "Piazza Università",
+"tipo": "proprietà",
+"colore": "arancione",
+"prezzo": 200,
+"affitto": 16
+},
+{
+"posizione": 20,
+"nome": "Parcheggio Gratuito",
+"tipo": "speciale",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 21,
+"nome": "Via Verdi",
+"tipo": "proprietà",
+"colore": "rosso",
+"prezzo": 220,
+"affitto": 18
+},
+{
+"posizione": 22,
+"nome": "Imprevisti",
+"tipo": "imprevisto",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 23,
+"nome": "Corso Raffaello",
+"tipo": "proprietà",
+"colore": "rosso",
+"prezzo": 220,
+"affitto": 18
+},
+{
+"posizione": 24,
+"nome": "Piazza Dante",
+"tipo": "proprietà",
+"colore": "rosso",
+"prezzo": 240,
+"affitto": 20
+},
+{
+"posizione": 25,
+"nome": "Stazione Est",
+"tipo": "stazione",
+"colore": null,
+"prezzo": 200,
+"affitto": 25
+},
+{
+"posizione": 26,
+"nome": "Via Marco Polo",
+"tipo": "proprietà",
+"colore": "giallo",
+"prezzo": 260,
+"affitto": 22
+},
+{
+"posizione": 27,
+"nome": "Via Orazio",
+"tipo": "proprietà",
+"colore": "giallo",
+"prezzo": 260,
+"affitto": 22
+},
+{
+"posizione": 28,
+"nome": "Società Acqua Potabile",
+"tipo": "società",
+"colore": null,
+"prezzo": 150,
+"affitto": "variabile"
+},
+{
+"posizione": 29,
+"nome": "Corso Magellano",
+"tipo": "proprietà",
+"colore": "giallo",
+"prezzo": 280,
+"affitto": 24
+},
+{
+"posizione": 30,
+"nome": "Vai in Prigione",
+"tipo": "speciale",
+"colore": null,
+"prezzo": null,
+"affitto": null,
+"descrizione": "Vai alla casella 10"
+},
+{
+"posizione": 31,
+"nome": "Largo Augusto",
+"tipo": "proprietà",
+"colore": "verde",
+"prezzo": 300,
+"affitto": 26
+},
+{
+"posizione": 32,
+"nome": "Corso Impero",
+"tipo": "proprietà",
+"colore": "verde",
+"prezzo": 300,
+"affitto": 26
+},
+{
+"posizione": 33,
+"nome": "Probabilità",
+"tipo": "probabilità",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 34,
+"nome": "Parco della Vittoria",
+"tipo": "proprietà",
+"colore": "verde",
+"prezzo": 320,
+"affitto": 28
+},
+{
+"posizione": 35,
+"nome": "Stazione Ovest",
+"tipo": "stazione",
+"colore": null,
+"prezzo": 200,
+"affitto": 25
+},
+{
+"posizione": 36,
+"nome": "Imprevisti",
+"tipo": "imprevisto",
+"colore": null,
+"prezzo": null,
+"affitto": null
+},
+{
+"posizione": 37,
+"nome": "Via Roma",
+"tipo": "proprietà",
+"colore": "blu",
+"prezzo": 350,
+"affitto": 35
+},
+{
+"posizione": 38,
+"nome": "Tassa di Lusso",
+"tipo": "tassa",
+"colore": null,
+"prezzo": null,
+"affitto": null,
+"descrizione": "Paga 100€"
+},
+{
+"posizione": 39,
+"nome": "Viale dei Giardini",
+"tipo": "proprietà",
+"colore": "blu",
+"prezzo": 400,
+"affitto": 50
+}
+]
