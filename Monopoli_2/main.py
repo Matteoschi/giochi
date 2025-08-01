@@ -13,11 +13,10 @@ os.makedirs(folder, exist_ok=True)
 nome_file = 'monopoli_spese.xlsx'
 exel_path = os.path.join(folder, nome_file)
 
-
 def verifica_file():
     try:
         if os.path.exists(imprevisti_path) and os.path.exists(board_path):
-            print("📁 i file esistonno")
+            print("📁 i file esistonno !")
             return True
         else:
             print("❌ File inesistenti.")
