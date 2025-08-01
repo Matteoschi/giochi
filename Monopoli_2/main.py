@@ -74,12 +74,12 @@ def apri_json():
         return json.load(file)
     
 
-def lancia_dadi(lista_giocatori,board):
+def lancia_dadi(board):
     posizione_iniziale=0
     numero_dati = int(input("inserisci numero dadi :"))
     if numero_dati >12:
         print("❌ Non puoi fare piu di 12 con 2 dadi ")
-        return lancia_dadi(lista_giocatori,board)
+        return lancia_dadi(board)
     
     for posto in board:
         if posto["posizione"] == numero_dati:
@@ -98,7 +98,7 @@ def main():
     ws = wb["Giocatori"]
     lista_giocatori = [row[0] for row in ws.iter_rows(min_row=2, max_col=1, values_only=True) if row[0]]
 
-    lancia_dadi(lista_giocatori,board)
+    lancia_dadi(board)
 
 
 
