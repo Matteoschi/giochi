@@ -87,35 +87,81 @@ def apri_json():
         return json.load(file)
     
 
-def lancia_dadi(giocatore, posizione_corrente, board , wb):
+def lancia_dadi(giocatore, posizione_corrente, board, wb):
     try:
         dado = int(input(f"{giocatore}, lancia i dadi (2-12): "))
         if not 2 <= dado <= 12:
             print("❌ Inserisci un numero tra 2 e 12.")
-            return lancia_dadi(giocatore, posizione_corrente, board)
+            return lancia_dadi(giocatore, posizione_corrente, board, wb)
     except ValueError:
         print("❌ Inserisci un numero valido.")
-        return lancia_dadi(giocatore, posizione_corrente, board)
+        return lancia_dadi(giocatore, posizione_corrente, board, wb)
 
     nuova_posizione = (posizione_corrente + dado) % len(board)
-    
+
     casella = next((p for p in board if p["posizione"] == nuova_posizione), None)
 
-    if casella:
-        nome = casella['nome']
-        tipo = casella['tipo']
-        colore = casella['colore']
-        print(f"{giocatore} è atterrato su '{nome}', tipo: {tipo}, colore: {colore}")
+    if not casella:
+        print("❌ Casella non trovata.")
+        return posizione_corrente  # Nessun cambiamento
 
-        # 📄 Scrittura nel foglio Excel del giocatore
-        if giocatore in wb.sheetnames:
-            foglio = wb[giocatore]
-            turno = foglio.max_row  # Assumiamo che ogni riga sia un turno (prima riga è intestazione)
-            descrizione = f"{tipo}, colore: {colore}" if colore else None
-            importo = 0  # Puoi cambiarlo con la logica economica futura
-            saldo = PATRIMONIO_INIZIALE  # Per ora saldo fisso
-            foglio.append([turno, nome, tipo, colore , importo, saldo])
-            wb.save(EXCEL_PATH)
+    nome = casella['nome']
+    tipo = casella.get('tipo')
+    colore = casella.get('colore')
+    affitto = casella.get('affitto', 0)
+    acquistato = casella.get('acquistato')
+    prezzo = casella.get("prezzo", 0)
+
+    print(f"{giocatore} è atterrato su '{nome}', tipo: {tipo}, colore: {colore}")
+
+    # Recupera il foglio del giocatore
+    if giocatore in wb.sheetnames:
+        foglio = wb[giocatore]
+        turno = foglio.max_row  # Prima riga = intestazione
+
+        # Recupera saldo precedente se esiste
+        if turno > 1:
+            saldo_precedente = foglio.cell(row=turno, column=6).value  #scelgie la colonna 6 e la riga del turno precedente
+            if saldo_precedente is not None:
+                saldo = saldo_precedente
+            else:
+                saldo= PATRIMONIO_INIZIALE
+        else:
+            saldo = PATRIMONIO_INIZIALE
+
+        importo = 0
+
+        # Logica proprietà
+        if tipo == "proprietà":
+            if not acquistato:
+                scelta = input("🏠 Vuoi acquistare questa proprietà? (s/n): ").strip().lower()
+                if scelta == "s":
+                    if saldo >= prezzo:
+                        saldo -= prezzo
+                        importo = -prezzo
+                        casella["acquistato"] = giocatore  
+                        print(f"✅ {giocatore} ha acquistato {nome} per {prezzo}€.")
+                        # Scrivi la board aggiornata
+                        with open(BOARD_PATH, 'w', encoding='utf-8') as file:
+                            json.dump(board, file, indent=4, ensure_ascii=False)
+                    else:
+                        print("💸 Fondi insufficienti per acquistare.")
+                else:
+                    print("⏭ Hai deciso di non acquistare.")
+
+            elif acquistato != giocatore:
+                # Affitto se proprietà è di un altro
+                print(f"💰 La proprietà è già stata acquistata da {acquistato}. Devi pagare l'affitto.")
+                importo = -affitto
+                saldo += importo
+
+        descrizione = f"{tipo}, colore: {colore}" if colore else tipo
+        foglio.append([turno, nome, descrizione, importo, saldo])
+        wb.save(EXCEL_PATH)
+    else:
+        print(f"⚠️ Foglio per {giocatore} non trovato.")
+
+    return nuova_posizione
 
 
 
@@ -145,13 +191,6 @@ def main():
     # Turno iniziale
     for giocatore in lista_giocatori:
         posizioni[giocatore] = lancia_dadi(giocatore, posizioni[giocatore], board , wb)
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
