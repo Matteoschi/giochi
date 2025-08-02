@@ -1,178 +1,149 @@
 [
     {
         "id": 1,
-        "testo": "Avete vinto il secondo premio in un concorso di bellezza. Ritirate 10€."
+        "testo": "Avete vinto il secondo premio in un concorso di bellezza. Ritirate 10€.",
+        "premio":10
     },
     {
         "id": 2,
-        "testo": "Andate avanti fino al VIA. Ritirate 200€."
+        "testo": "Andate avanti fino al VIA. Ritirate 200€.",
+        "premio":200
     },
     {
         "id": 3,
-        "testo": "Andate in prigione direttamente senza passare dal VIA."
+        "testo": "Avete venduto un'opera d'arte. Incassate 100€.",
+        "premio":100
+        
     },
     {
         "id": 4,
-        "testo": "Uscite gratis di prigione. Conservate questa carta fino a quando vi servirà."
+        "testo": "Avete pagato una multa per eccesso di velocità. Pagate 15€.",
+        "premio":-15
     },
     {
         "id": 5,
-        "testo": "Avete venduto un'opera d'arte. Incassate 100€."
+        "testo": "Il vostro veicolo è stato riparato. Pagate 50€.",
+        "premio":-50
     },
     {
         "id": 6,
-        "testo": "Avete pagato una multa per eccesso di velocità. Pagate 15€."
+        "testo": "Le azioni sono andate bene. Incassate 50€.",
+        "premio":50
     },
     {
         "id": 7,
-        "testo": "Il vostro veicolo è stato riparato. Pagate 50€."
+        "testo": "Pagate le spese scolastiche. 150€.",
+        "premio":-150
     },
     {
         "id": 8,
-        "testo": "Andate fino alla Stazione Sud. Se passate dal VIA, ritirate 200€."
+        "testo": "La banca vi accredita gli interessi. Incassate 25€.",
+        "premio":25
     },
     {
         "id": 9,
-        "testo": "Le azioni sono andate bene. Incassate 50€."
+        "testo": "Multa per ubriachezza. Pagate 20€.",
+        "premio":-20
     },
     {
         "id": 10,
-        "testo": "Pagate le spese scolastiche. 150€."
+        "testo": "Siete stati nominati presidente del consiglio d’amministrazione. Incassate 150€.",
+        "premio":150
     },
     {
         "id": 11,
-        "testo": "La banca vi accredita gli interessi. Incassate 25€."
+        "testo": "Vendita di azioni: incassate 45€.",
+        "premio":45
     },
     {
         "id": 12,
-        "testo": "Multa per ubriachezza. Pagate 20€."
+        "testo": "Restituzione tasse: incassate 20€.",
+        "premio":20
     },
     {
         "id": 13,
-        "testo": "Ristrutturazione casa: pagate 40€ per casa e 115€ per albergo."
+        "testo": "Spese mediche: pagate 100€.",
+        "premio":-100
     },
     {
         "id": 14,
-        "testo": "Andate fino a Largo Colombo."
+        "testo": "Avete ereditato una somma. Incassate 100€.",
+        "premio":100
     },
     {
         "id": 15,
-        "testo": "Siete stati nominati presidente del consiglio d’amministrazione. Incassate 150€."
+        "testo": "Ricevete un rimborso assicurativo. Incassate 150€.",
+        "premio":150
     },
     {
         "id": 16,
-        "testo": "Vendita di azioni: incassate 45€."
+        "testo": "La vostra auto è stata rimossa. Pagate 75€.",
+        "premio":-75
     },
     {
         "id": 17,
-        "testo": "Restituzione tasse: incassate 20€."
+        "testo": "Acquistate una nuova auto. Pagate 200€.",
+        "premio":-200
     },
     {
         "id": 18,
-        "testo": "Spese mediche: pagate 100€."
+        "testo": "Investimenti sbagliati. Perdi 100€.",
+        "premio":-100
     },
     {
         "id": 19,
-        "testo": "Andate avanti di 3 caselle."
+        "testo": "Siete stati derubati. Perdi 50€.",
+        "premio":-50
     },
     {
         "id": 20,
-        "testo": "Indietreggiate di 3 caselle."
-    },
-    {
-        "id": 21,
-        "testo": "Pagate 50€ a ciascun giocatore."
-    },
-    {
-        "id": 22,
-        "testo": "Avete ereditato una somma. Incassate 100€."
-    },
-    {
-        "id": 23,
-        "testo": "Ricevete un rimborso assicurativo. Incassate 150€."
-    },
-    {
-        "id": 24,
-        "testo": "La vostra auto è stata rimossa. Pagate 75€."
-    },
-    {
-        "id": 25,
-        "testo": "Andate fino a Parco della Vittoria."
-    },
-    {
-        "id": 26,
-        "testo": "Acquistate una nuova auto. Pagate 200€."
-    },
-    {
-        "id": 27,
-        "testo": "Investimenti sbagliati. Perdi 100€."
-    },
-    {
-        "id": 28,
-        "testo": "Siete stati derubati. Perdi 50€."
-    },
-    {
-        "id": 29,
-        "testo": "Multa per parcheggio in divieto. Pagate 25€."
-    },
-    {
-        "id": 30,
-        "testo": "Andate fino a Stazione Ovest."
-    },
-    {
-        "id": 17, 
-        "testo": "Restituzione tasse: incassate 20€."
-    },    
-    {
-        "id": 18, 
-        "testo": "Spese mediche: pagate 100€."
-    },
-    {
-        "id": 19, 
-        "testo": "Andate avanti di 3 caselle."
-    },
-    {
-        "id": 20, 
-        "testo": "Indietreggiate di 3 caselle."
+        "testo": "Multa per parcheggio in divieto. Pagate 25€.",
+        "premio":-25
     },
     {
         "id": 21, 
-        "testo": "Pagate 50€ a ciascun giocatore."
-    },
+        "testo": "Restituzione tasse: incassate 20€.",
+        "premio":20
+    },    
     {
         "id": 22, 
-        "testo": "Avete ereditato una somma. Incassate 100€."
+        "testo": "Spese mediche: pagate 100€.",
+        "premio":-100
     },
     {
         "id": 23, 
-        "testo": "Ricevete un rimborso assicurativo. Incassate 150€."
+        "testo": "Avete ereditato una somma. Incassate 100€.",
+        "premio":150
     },
     {
         "id": 24, 
-        "testo": "La vostra auto è stata rimossa. Pagate 75€."
+        "testo": "Ricevete un rimborso assicurativo. Incassate 150€.",
+        "premio":150
     },
     {
         "id": 25, 
-        "testo": "Andate fino a Parco della Vittoria."
+        "testo": "La vostra auto è stata rimossa. Pagate 75€.",
+        "premio":-75
     },
     {
         "id": 26, 
-        "testo": "Acquistate una nuova auto. Pagate 200€."
+        "testo": "Acquistate una nuova auto. Pagate 200€.",
+        "premio":-200
     },
     {
         "id": 27, 
-        "testo": "Investimenti sbagliati. Perdi 100€."
+        "testo": "Investimenti sbagliati. Perdi 100€.",
+        "premio":-100
     },
     {
         "id": 28, 
-        "testo": "Siete stati derubati. Perdi 50€."
+        "testo": "Siete stati derubati. Perdi 50€.",
+        "premio":-50
+
     },
     {
         "id": 29, 
-        "testo": "Multa per parcheggio in divieto. Pagate 25€."
-    },
-    {
-        "id": 30, 
-        "testo": "Andate fino a Stazione Ovest."
+        "testo": "Multa per parcheggio in divieto. Pagate 25€.",
+        "premio":-25
     }
 ]
