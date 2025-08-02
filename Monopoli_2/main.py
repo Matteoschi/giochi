@@ -170,6 +170,45 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                 else:
                     print(f"⚠️ Errore: foglio del proprietario '{proprietario}' non trovato.")
 
+            elif proprietario == giocatore:
+                case_hotel = input(f"Che bello rivederti {giocatore}, vuoi costruire case o hotel? (s/n) ").strip().lower()
+                if case_hotel == "s":
+                    cosa = input("Cosa vuoi costruire? (casa/hotel): ").strip().lower()
+
+                    if cosa == "casa":
+                        try:
+                            numero_case = int(input("Quante case vuoi acquistare? (1-4): ").strip())
+                        except ValueError:
+                            print("❌ Inserisci un numero valido.")
+                            return
+
+                        if 1 <= numero_case <= 4:
+                            if numero_case == 1:
+                                chiave_affitto = f"affitto_{numero_case}_casa"
+                            else:
+                                chiave_affitto = f"affitto_{numero_case}_case"
+
+                            affitto_delle_infrastrutture = casella.get(chiave_affitto, 0)
+                            saldo -= affitto_delle_infrastrutture
+                            descrizione = f"🏠 Costruite {numero_case} case per {affitto_delle_infrastrutture} euro. Affitto ora: {affitto_delle_infrastrutture}€"
+                            foglio.append([turno, "", "", "", -affitto_delle_infrastrutture, saldo, descrizione])
+                            casella["numero_case"] = numero_case
+                        else:
+                            print("⚠️ Puoi costruire solo da 1 a 4 case.")
+
+                    elif cosa == "hotel":
+                        if not casella.get("hotel") and casella.get("numero_case", 0) == 4:
+                            hotel = casella.get("affitto_albergo", 0)
+                            saldo -= hotel
+                            descrizione = f"🏨 Costruito 1 hotel per {hotel} euro. Affitto ora: {hotel}€"
+                            foglio.append([turno, "", "", "", -hotel, saldo, descrizione])
+                            casella["hotel"] = True
+                        elif casella.get("hotel"):
+                            print("⚠️ Hai già costruito un hotel qui.")
+                        else:
+                            print("⚠️ Devi avere prima 4 case per costruire un hotel.")
+
+
 
         if tipo == "imprevisto":
             if imprevisti:
@@ -182,6 +221,44 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
             else:
                 print("⚠️ Nessun imprevisto disponibile.")
 
+        if tipo == "stazione":
+            if not proprietario:
+                scelta = input("🏠 Vuoi acquistare questa proprietà? (s/n): ").strip().lower()
+                if scelta == "s":
+                    if saldo >= prezzo:
+                        saldo -= prezzo
+                        importo = -prezzo
+                        casella["acquistato"] = giocatore  
+                        print(f"✅ {giocatore} ha acquistato {nome} per {prezzo}€.")
+                        # Scrivi la board aggiornata
+                        with open(BOARD_PATH, 'w', encoding='utf-8') as file:
+                            json.dump(board, file, indent=4, ensure_ascii=False)
+                    else:
+                        print("💸 Fondi insufficienti per acquistare.")
+                else:
+                    print("⏭ Hai deciso di non acquistare.")
+
+            elif proprietario != giocatore:
+                print(f"💰 La proprietà è già stata acquistata da {proprietario}. Devi pagare l'affitto di {affitto}€.")
+                importo = -affitto
+                saldo += importo  # Diminuisce saldo del giocatore attuale
+
+                # Accredita affitto al proprietario
+                if proprietario in wb.sheetnames:
+                    foglio_proprietario = wb[proprietario]
+                    turno_proprietario = foglio_proprietario.max_row  # Prima riga è intestazione
+
+                    # Recupera saldo precedente del proprietario
+                    if turno_proprietario > 1:
+                        saldo_prec = foglio_proprietario.cell(row=turno_proprietario, column=6).value
+                        saldo_proprietario = saldo_prec + affitto if saldo_prec else PATRIMONIO_INIZIALE + affitto
+                    else:
+                        saldo_proprietario = PATRIMONIO_INIZIALE + affitto
+                    foglio_proprietario.append([turno_proprietario, "", "","", affitto, saldo_proprietario,f"Incasso affitto da {giocatore}"])
+                    print(f"transazione eseguita correttamente di euro {affitto} , beneficiario {proprietario} , ordinante {giocatore} ")
+                else:
+                    print(f"⚠️ Errore: foglio del proprietario '{proprietario}' non trovato.")
+           
         wb.save(EXCEL_PATH)
     else:
         print(f"⚠️ Foglio per {giocatore} non trovato.")
