@@ -5,7 +5,7 @@ import random
 import json
 
 # === PERCORSI E COSTANTI ===
-PATRIMONIO_INIZIALE = 200
+PATRIMONIO_INIZIALE = 1000
 FOLDER = "Monopoli_2"
 os.makedirs(FOLDER, exist_ok=True)
 NOME_FILE_EXCEL = "monopoli_spese.xlsx"
@@ -35,7 +35,7 @@ def verifica_file(lista_giocatori):
             # Crea un foglio per ogni giocatore
             for giocatore in lista_giocatori:
                 foglio = wb.create_sheet(title=giocatore)
-                foglio.append(["Turno", "Casella", "tipo", "colore", "Importo", "Saldo"])
+                foglio.append(["Turno", "Casella", "tipo", "colore", "Importo", "Saldo" , "descrizione"])
 
             wb.save(EXCEL_PATH)
             print(f"✅ File '{NOME_FILE_EXCEL}' creato con i fogli dei giocatori.")
@@ -83,11 +83,11 @@ def aggiungi_giocatori():
     return lista_giocatori
 
 def apri_json():
-    with open(BOARD_PATH, 'r' , "utf-8") as file:
+    with open(BOARD_PATH, 'r' , encoding="utf-8") as file:
         return json.load(file)
     
 
-def lancia_dadi(giocatore, posizione_corrente, board, wb):
+def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     try:
         dado = int(input(f"{giocatore}, lancia i dadi (2-12): "))
         if not 2 <= dado <= 12:
@@ -109,7 +109,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb):
     tipo = casella.get('tipo')
     colore = casella.get('colore')
     affitto = casella.get('affitto', 0)
-    acquistato = casella.get('acquistato')
+    proprietario = casella.get('acquistato')
     prezzo = casella.get("prezzo", 0)
 
     print(f"{giocatore} è atterrato su '{nome}', tipo: {tipo}, colore: {colore}")
@@ -133,7 +133,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb):
 
         # Logica proprietà
         if tipo == "proprietà":
-            if not acquistato:
+            if not proprietario:
                 scelta = input("🏠 Vuoi acquistare questa proprietà? (s/n): ").strip().lower()
                 if scelta == "s":
                     if saldo >= prezzo:
@@ -149,14 +149,39 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb):
                 else:
                     print("⏭ Hai deciso di non acquistare.")
 
-            elif acquistato != giocatore:
-                # Affitto se proprietà è di un altro
-                print(f"💰 La proprietà è già stata acquistata da {acquistato}. Devi pagare l'affitto.")
+            elif proprietario != giocatore:
+                print(f"💰 La proprietà è già stata acquistata da {proprietario}. Devi pagare l'affitto di {affitto}€.")
                 importo = -affitto
-                saldo += importo
+                saldo += importo  # Diminuisce saldo del giocatore attuale
 
-        descrizione = f"{tipo}, colore: {colore}" if colore else tipo
-        foglio.append([turno, nome, descrizione, importo, saldo])
+                # Accredita affitto al proprietario
+                if proprietario in wb.sheetnames:
+                    foglio_proprietario = wb[proprietario]
+                    turno_proprietario = foglio_proprietario.max_row  # Prima riga è intestazione
+
+                    # Recupera saldo precedente del proprietario
+                    if turno_proprietario > 1:
+                        saldo_prec = foglio_proprietario.cell(row=turno_proprietario, column=6).value
+                        saldo_proprietario = saldo_prec + affitto if saldo_prec else PATRIMONIO_INIZIALE + affitto
+                    else:
+                        saldo_proprietario = PATRIMONIO_INIZIALE + affitto
+                    foglio_proprietario.append([turno_proprietario, "", "","", affitto, saldo_proprietario,f"Incasso affitto da {giocatore}"])
+                    print(f"transazione eseguita correttamente di euro {affitto} , beneficiario {proprietario} , ordinante {giocatore} ")
+                else:
+                    print(f"⚠️ Errore: foglio del proprietario '{proprietario}' non trovato.")
+
+
+        if tipo == "imprevisto":
+            if imprevisti:
+                imprevisto = random.choice(imprevisti)
+                descrizione = imprevisto.get("testo")
+                importo = imprevisto.get("premio", 0)
+                saldo += importo
+                foglio.append([turno,"","","",importo,saldo,descrizione])
+                print(f"{descrizione}")
+            else:
+                print("⚠️ Nessun imprevisto disponibile.")
+
         wb.save(EXCEL_PATH)
     else:
         print(f"⚠️ Foglio per {giocatore} non trovato.")
@@ -190,7 +215,7 @@ def main():
 
     # Turno iniziale
     for giocatore in lista_giocatori:
-        posizioni[giocatore] = lancia_dadi(giocatore, posizioni[giocatore], board , wb)
+        posizioni[giocatore] = lancia_dadi(giocatore, posizioni[giocatore], board , wb , imprevisti)
 
 
 if __name__ == "__main__":
