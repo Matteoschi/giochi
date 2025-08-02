@@ -11,10 +11,17 @@
 {
 "posizione": 1,
 "nome": "Vicolo Corto",
-"tipo": "proprietà",
 "colore": "marrone",
+"tipo": "proprietà",
 "prezzo": 60,
-"affitto": 2
+"affitto": 2,
+"affitto_1_casa": 10,
+"affitto_2_case": 30,
+"affitto_3_case": 90,
+"affitto_4_case": 160,
+"affitto_albergo": 250,
+"ipoteca": 30,
+"costo_casa": 50
 },
 {
 "posizione": 2,
@@ -25,12 +32,19 @@
 "affitto": null
 },
 {
-"posizione": 3,
-"nome": "Vicolo Stretto",
-"tipo": "proprietà",
-"colore": "marrone",
-"prezzo": 60,
-"affitto": 4
+    "nome": "Vicolo Stretto",
+    "colore": "marrone",
+    "tipo": "proprietà",
+    "posizione": 3,
+    "prezzo": 60,
+    "affitto": 4,
+    "affitto_1_casa": 20,
+    "affitto_2_case": 60,
+    "affitto_3_case": 180,
+    "affitto_4_case": 320,
+    "affitto_albergo": 450,
+    "ipoteca": 30,
+    "costo_casa": 50
 },
 {
 "posizione": 4,
@@ -50,12 +64,19 @@
 "affitto": 25
 },
 {
-"posizione": 6,
-"nome": "Bastioni Gran Sasso",
-"tipo": "proprietà",
-"colore": "celeste",
-"prezzo": 100,
-"affitto": 6
+    "nome": "Bastioni Gran Sasso",
+    "colore": "celeste",
+    "tipo": "proprietà",
+    "posizione": 6,
+    "prezzo": 100,
+    "affitto": 6,
+    "affitto_1_casa": 30,
+    "affitto_2_case": 90,
+    "affitto_3_case": 270,
+    "affitto_4_case": 400,
+    "affitto_albergo": 550,
+    "ipoteca": 50,
+    "costo_casa": 50
 },
 {
 "posizione": 7,
@@ -66,20 +87,34 @@
 "affitto": null
 },
 {
-"posizione": 8,
-"nome": "Viale Monterosa",
-"tipo": "proprietà",
-"colore": "celeste",
-"prezzo": 100,
-"affitto": 6
+    "nome": "Viale Monterosa",
+    "colore": "celeste",
+    "tipo": "proprietà",
+    "posizione": 8,
+    "prezzo": 100,
+    "affitto": 6,
+    "affitto_1_casa": 30,
+    "affitto_2_case": 90,
+    "affitto_3_case": 270,
+    "affitto_4_case": 400,
+    "affitto_albergo": 550,
+    "ipoteca": 50,
+    "costo_casa": 50
 },
 {
-"posizione": 9,
-"nome": "Viale Vesuvio",
-"tipo": "proprietà",
-"colore": "celeste",
-"prezzo": 120,
-"affitto": 8
+    "nome": "Viale Vesuvio",
+    "colore": "celeste",
+    "tipo": "proprietà",
+    "posizione": 9,
+    "prezzo": 120,
+    "affitto": 8,
+    "affitto_1_casa": 40,
+    "affitto_2_case": 100,
+    "affitto_3_case": 300,
+    "affitto_4_case": 450,
+    "affitto_albergo": 600,
+    "ipoteca": 60,
+    "costo_casa": 50
 },
 {
 "posizione": 10,
@@ -90,12 +125,19 @@
 "affitto": null
 },
 {
-"posizione": 11,
-"nome": "Via Accademia",
-"tipo": "proprietà",
-"colore": "rosa",
-"prezzo": 140,
-"affitto": 10
+    "nome": "Via Accademia",
+    "colore": "rosa",
+    "tipo": "proprietà",
+    "posizione": 11,
+    "prezzo": 140,
+    "affitto": 10,
+    "affitto_1_casa": 50,
+    "affitto_2_case": 150,
+    "affitto_3_case": 450,
+    "affitto_4_case": 625,
+    "affitto_albergo": 750,
+    "ipoteca": 70,
+    "costo_casa": 100
 },
 {
 "posizione": 12,
@@ -106,20 +148,34 @@
 "affitto": "variabile"
 },
 {
-"posizione": 13,
-"nome": "Corso Ateneo",
-"tipo": "proprietà",
-"colore": "rosa",
-"prezzo": 140,
-"affitto": 10
+    "nome": "Corso Ateneo",
+    "colore": "rosa",
+    "tipo": "proprietà",
+    "posizione": 13,
+    "prezzo": 140,
+    "affitto": 10,
+    "affitto_1_casa": 50,
+    "affitto_2_case": 150,
+    "affitto_3_case": 450,
+    "affitto_4_case": 625,
+    "affitto_albergo": 750,
+    "ipoteca": 70,
+    "costo_casa": 100
 },
 {
-"posizione": 14,
-"nome": "Largo Colombo",
-"tipo": "proprietà",
-"colore": "rosa",
-"prezzo": 160,
-"affitto": 12
+    "nome": "Largo Colombo",
+    "colore": "rosso",
+    "tipo": "proprietà",
+    "posizione": 14,
+    "prezzo": 240,
+    "affitto": 20,
+    "affitto_1_casa": 100,
+    "affitto_2_case": 300,
+    "affitto_3_case": 750,
+    "affitto_4_case": 925,
+    "affitto_albergo": 1100,
+    "ipoteca": 120,
+    "costo_casa": 150
 },
 {
 "posizione": 15,
@@ -130,12 +186,19 @@
 "affitto": 25
 },
 {
-"posizione": 16,
-"nome": "Viale Costantino",
-"tipo": "proprietà",
-"colore": "arancione",
-"prezzo": 180,
-"affitto": 14
+    "nome": "Viale Costantino",
+    "colore": "giallo",
+    "tipo": "proprietà",
+    "posizione": 16,
+    "prezzo": 260,
+    "affitto": 22,
+    "affitto_1_casa": 110,
+    "affitto_2_case": 330,
+    "affitto_3_case": 800,
+    "affitto_4_case": 975,
+    "affitto_albergo": 1150,
+    "ipoteca": 130,
+    "costo_casa": 150
 },
 {
 "posizione": 17,
@@ -146,20 +209,34 @@
 "affitto": null
 },
 {
-"posizione": 18,
-"nome": "Viale Traiano",
-"tipo": "proprietà",
-"colore": "arancione",
-"prezzo": 180,
-"affitto": 14
+    "nome": "Viale Traiano",
+    "colore": "giallo",
+    "tipo": "proprietà",
+    "posizione": 18,
+    "prezzo": 260,
+    "affitto": 22,
+    "affitto_1_casa": 110,
+    "affitto_2_case": 330,
+    "affitto_3_case": 800,
+    "affitto_4_case": 975,
+    "affitto_albergo": 1150,
+    "ipoteca": 130,
+    "costo_casa": 150
 },
 {
-"posizione": 19,
-"nome": "Piazza Università",
-"tipo": "proprietà",
-"colore": "arancione",
-"prezzo": 200,
-"affitto": 16
+    "nome": "Piazza Università",
+    "colore": "rosa",
+    "tipo": "proprietà",
+    "posizione": 19,
+    "prezzo": 160,
+    "affitto": 12,
+    "affitto_1_casa": 60,
+    "affitto_2_case": 180,
+    "affitto_3_case": 500,
+    "affitto_4_case": 700,
+    "affitto_albergo": 900,
+    "ipoteca": 80,
+    "costo_casa": 100
 },
 {
 "posizione": 20,
@@ -170,12 +247,19 @@
 "affitto": null
 },
 {
-"posizione": 21,
-"nome": "Via Verdi",
-"tipo": "proprietà",
-"colore": "rosso",
-"prezzo": 220,
-"affitto": 18
+    "nome": "Via Verdi",
+    "colore": "arancione",
+    "tipo": "proprietà",
+    "posizione": 21,
+    "prezzo": 180,
+    "affitto": 14,
+    "affitto_1_casa": 70,
+    "affitto_2_case": 200,
+    "affitto_3_case": 550,
+    "affitto_4_case": 750,
+    "affitto_albergo": 950,
+    "ipoteca": 90,
+    "costo_casa": 100
 },
 {
 "posizione": 22,
@@ -186,20 +270,34 @@
 "affitto": null
 },
 {
-"posizione": 23,
-"nome": "Corso Raffaello",
-"tipo": "proprietà",
-"colore": "rosso",
-"prezzo": 220,
-"affitto": 18
+    "nome": "Corso Raffaello",
+    "colore": "arancione",
+    "tipo": "proprietà",
+    "posizione": 13,
+    "prezzo": 180,
+    "affitto": 14,
+    "affitto_1_casa": 70,
+    "affitto_2_case": 200,
+    "affitto_3_case": 550,
+    "affitto_4_case": 750,
+    "affitto_albergo": 950,
+    "ipoteca": 90,
+    "costo_casa": 100
 },
 {
-"posizione": 24,
-"nome": "Piazza Dante",
-"tipo": "proprietà",
-"colore": "rosso",
-"prezzo": 240,
-"affitto": 20
+    "nome": "Piazza Dante",
+    "colore": "arancione",
+    "tipo": "proprietà",
+    "posizione": 24,
+    "prezzo": 200,
+    "affitto": 16,
+    "affitto_1_casa": 80,
+    "affitto_2_case": 220,
+    "affitto_3_case": 600,
+    "affitto_4_case": 800,
+    "affitto_albergo": 1000,
+    "ipoteca": 100,
+    "costo_casa": 100
 },
 {
 "posizione": 25,
@@ -210,20 +308,34 @@
 "affitto": 25
 },
 {
-"posizione": 26,
-"nome": "Via Marco Polo",
-"tipo": "proprietà",
-"colore": "giallo",
-"prezzo": 260,
-"affitto": 22
+    "nome": "Via Marco Polo",
+    "colore": "rosso",
+    "tipo": "proprietà",
+    "posizione": 26,
+    "prezzo": 220,
+    "affitto": 18,
+    "affitto_1_casa": 90,
+    "affitto_2_case": 250,
+    "affitto_3_case": 700,
+    "affitto_4_case": 875,
+    "affitto_albergo": 1050,
+    "ipoteca": 110,
+    "costo_casa": 150
 },
 {
-"posizione": 27,
-"nome": "Via Orazio",
-"tipo": "proprietà",
-"colore": "giallo",
-"prezzo": 260,
-"affitto": 22
+    "nome": "Piazza Giulio Cesare",
+    "colore": "giallo",
+    "tipo": "proprietà",
+    "posizione": 27,
+    "prezzo": 280,
+    "affitto": 24,
+    "affitto_1_casa": 120,
+    "affitto_2_case": 360,
+    "affitto_3_case": 850,
+    "affitto_4_case": 1025,
+    "affitto_albergo": 1200,
+    "ipoteca": 140,
+    "costo_casa": 150
 },
 {
 "posizione": 28,
@@ -234,12 +346,19 @@
 "affitto": "variabile"
 },
 {
-"posizione": 29,
-"nome": "Corso Magellano",
-"tipo": "proprietà",
-"colore": "giallo",
-"prezzo": 280,
-"affitto": 24
+    "nome": "Corso Magellano",
+    "colore": "rosso",
+    "tipo": "proprietà",
+    "posizione": 29,
+    "prezzo": 220,
+    "affitto": 18,
+    "affitto_1_casa": 90,
+    "affitto_2_case": 250,
+    "affitto_3_case": 700,
+    "affitto_4_case": 875,
+    "affitto_albergo": 1050,
+    "ipoteca": 110,
+    "costo_casa": 150
 },
 {
 "posizione": 30,
@@ -251,20 +370,34 @@
 "descrizione": "Vai alla casella 10"
 },
 {
-"posizione": 31,
-"nome": "Largo Augusto",
-"tipo": "proprietà",
-"colore": "verde",
-"prezzo": 300,
-"affitto": 26
+    "nome": "Largo Augusto",
+    "colore": "verde",
+    "tipo": "proprietà",
+    "posizione": 31,
+    "prezzo": 320,
+    "affitto": 28,
+    "affitto_1_casa": 150,
+    "affitto_2_case": 450,
+    "affitto_3_case": 1000,
+    "affitto_4_case": 1200,
+    "affitto_albergo": 1400,
+    "ipoteca": 160,
+    "costo_casa": 200
 },
 {
-"posizione": 32,
-"nome": "Corso Impero",
-"tipo": "proprietà",
-"colore": "verde",
-"prezzo": 300,
-"affitto": 26
+    "nome": "Corso Impero",
+    "colore": "verde",
+    "tipo": "proprietà",
+    "posizione": 32,
+    "prezzo": 300,
+    "affitto": 26,
+    "affitto_1_casa": 130,
+    "affitto_2_case": 390,
+    "affitto_3_case": 900,
+    "affitto_4_case": 1100,
+    "affitto_albergo": 1275,
+    "ipoteca": 150,
+    "costo_casa": 200
 },
 {
 "posizione": 33,
@@ -275,12 +408,19 @@
 "affitto": null
 },
 {
-"posizione": 34,
-"nome": "Parco della Vittoria",
-"tipo": "proprietà",
-"colore": "verde",
-"prezzo": 320,
-"affitto": 28
+    "nome": "Parco della Vittoria",
+    "colore": "blu",
+    "tipo": "proprietà",
+    "posizione": 34,
+    "prezzo": 400,
+    "affitto": 50,
+    "affitto_1_casa": 200,
+    "affitto_2_case": 600,
+    "affitto_3_case": 1400,
+    "affitto_4_case": 1700,
+    "affitto_albergo": 2000,
+    "ipoteca": 200,
+    "costo_casa": 200
 },
 {
 "posizione": 35,
@@ -299,12 +439,19 @@
 "affitto": null
 },
 {
-"posizione": 37,
-"nome": "Via Roma",
-"tipo": "proprietà",
-"colore": "blu",
-"prezzo": 350,
-"affitto": 35
+    "nome": "Via Roma",
+    "colore": "verde",
+    "tipo": "proprietà",
+    "posizione": 37,
+    "prezzo": 300,
+    "affitto": 26,
+    "affitto_1_casa": 130,
+    "affitto_2_case": 390,
+    "affitto_3_case": 900,
+    "affitto_4_case": 1100,
+    "affitto_albergo": 1275,
+    "ipoteca": 150,
+    "costo_casa": 200
 },
 {
 "posizione": 38,
@@ -316,11 +463,18 @@
 "descrizione": "Paga 100€"
 },
 {
-"posizione": 39,
-"nome": "Viale dei Giardini",
-"tipo": "proprietà",
-"colore": "blu",
-"prezzo": 400,
-"affitto": 50
+    "nome": "Viale dei Giardini",
+    "colore": "blu",
+    "tipo": "proprietà",
+    "posizione": 39,
+    "prezzo": 350,
+    "affitto": 35,
+    "affitto_1_casa": 175,
+    "affitto_2_case": 500,
+    "affitto_3_case": 1100,
+    "affitto_4_case": 1300,
+    "affitto_albergo": 1500,
+    "ipoteca": 175,
+    "costo_casa": 200
 }
 ]
