@@ -250,11 +250,17 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     
     if tipo_casella == "tassa":
         importo = casella.get("premio", 0)
-        saldo -= importo
-        foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento tassa"])
-        print(f"{giocatore} ha pagato {importo} euro per essere capitato {nome_casella}")
+        if casella.get("speciale") is not None:
+            saldo -= importo
+            foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento tassa"])
+            print(f"{giocatore} ha pagato {importo} euro per essere capitato {nome_casella}")
+            wb.save(EXCEL_PATH)
+        else:
+            saldo += importo
+            foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", importo, saldo, "passato dal via"])
+            print(f"{giocatore} ottiene {importo} euro per essere passato dal {nome_casella}")
+            wb.save(EXCEL_PATH)
 
-   
     if tipo_casella == "stazione":
         # COMPRARE LA STAZIONE
         if not proprietario_casella and not stato_ipoteca:
@@ -303,6 +309,58 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                 print(f"il {giocatore} ha pagato {affitto_totale} euro a {proprietario_casella}")
             else:
                 print("❌ Errore: foglio del proprietario non trovato.")
+
+    if tipo_casella == "imprevisto":
+        imprevisto = random.choise(imprevisti)
+        saldo += imprevisto["premio"]
+        foglio.append([turno, nome_casella, imprevisto["id"], tipo_casella, "NA", imprevisto["premio"], saldo, "imprevisto"])
+        print(f"sei capitato in un imprevisto : {imprevisto["premio"]} euro sul tuo conto")
+        wb.save(EXCEL_PATH)
+
+    if tipo_casella == "società":
+        if not proprietario_casella and not stato_ipoteca:
+            if saldo >= prezzo_casella:
+                scelta_società=input(f"{giocatore} , vuoi comprare la società :{nome_casella} per {prezzo_casella} euro ? (s/n) ")
+                if scelta_società == "s":
+                        saldo -= prezzo_casella
+                        casella["acquistato"] = giocatore
+                        foglio.append([turno, nome_casella, id_casella, tipo_casella, "società", -prezzo_casella, saldo, "acquisto società"])
+                        with open(BOARD_PATH, "w", encoding="utf-8") as file:
+                            json.dump(board, file, indent=4, ensure_ascii=False)
+                        wb.save(EXCEL_PATH)
+                        print(f"complimenti {giocatore} hai comprato la società per {prezzo_casella} euro")
+            else:
+                print("non hai abbastanza soldi")
+        if giocatore != proprietario_casella:
+            print(f"💼 {giocatore} è atterrato su una proprietà di {proprietario_casella}.")
+            if proprietario_casella in wb.sheetnames:
+                foglio_prop = wb[proprietario_casella]
+                turno_prop = foglio_prop.max_row
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+            
+            numero_società = 0
+            for row in foglio_prop.iter_rows(min_row=1, min_col=5, max_col=5):
+                cell_value = row[0].value
+                if isinstance(cell_value, str) and cell_value.strip().lower() == "società":
+                    numero_società += 1
+            
+            if numero_società > 1:
+                importo = dado * 10
+                saldo -= importo 
+                saldo_prop += importo
+                print(f"{giocatore} paga {importo} euro Poichè il proprietario possiede 2 società dunque: {dado} * 10")
+                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento società"])
+                foglio_prop.append([turno, nome_casella, id_casella, tipo_casella, "NA", importo, saldo_prop, "ottenuto pagamento società"])
+                wb.save(EXCEL_PATH)
+            else:
+                importo = dado * 4
+                saldo -= importo 
+                saldo_prop += importo
+                print(f"{giocatore} paga {importo} euro Poichè il proprietario possiede 2 società dunque: {dado} * 4")
+                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento società"])
+                foglio_prop.append([turno, nome_casella, id_casella, tipo_casella, "Na", importo, saldo_prop, "ottenuto pagamento società"])
+                wb.save(EXCEL_PATH)
 
 
     return nuova_posizione
