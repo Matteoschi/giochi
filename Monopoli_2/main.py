@@ -84,7 +84,7 @@ def aggiungi_giocatori():
     print(f"🎮 Giocatori registrati: {lista_giocatori}")
     return lista_giocatori  
 
-    
+
 def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     try:
         dado = int(input(f"{giocatore}, lancia i dadi (2-12): "))
@@ -249,52 +249,60 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                     print("❌ Inserisci un numero valido.")
     
     if tipo_casella == "tassa":
-        importo = casella.get["premio",0]
-        saldo += importo
-        foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", importo, saldo,])
+        importo = casella.get("premio", 0)
+        saldo -= importo
+        foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento tassa"])
+        print(f"{giocatore} ha pagato {importo} euro per essere capitato {nome_casella}")
 
-    
+   
     if tipo_casella == "stazione":
-        #COMPRARE LA STAZIONE
+        # COMPRARE LA STAZIONE
         if not proprietario_casella and not stato_ipoteca:
             scelta = input(f"🏠 Vuoi acquistare {nome_casella} per {prezzo_casella}€? (s/n): ").strip().lower()
             if scelta == "s":
                 if saldo >= prezzo_casella:
                     saldo -= prezzo_casella
                     casella["acquistato"] = giocatore
-                    foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -prezzo_casella, saldo, "acquisto proprietà"]) 
+                    foglio.append([turno, nome_casella, id_casella, tipo_casella, "Stazione", -prezzo_casella, saldo, "acquisto proprietà"]) 
                     print(f"✅ Hai acquistato {nome_casella} per {prezzo_casella}€.")
                     with open(BOARD_PATH, "w", encoding="utf-8") as file:
                         json.dump(board, file, indent=4, ensure_ascii=False)
                     wb.save(EXCEL_PATH)
+                    print(f"il {giocatore} ha comprato per {prezzo_casella} {nome_casella}")
                 else:
                     print("💸 Fondi insufficienti.")
             else:
                 print("⏭ Hai deciso di non acquistare.")
-        #PAGARE AFFITTO
-        if giocatore != proprietario_casella:
-            print(f"devi pagare {affitto} a {proprietario_casella}")
-            if proprietario_casella in wb.sheetnames:
-                foglio_prop=wb[proprietario_casella]
-                turno_prop = foglio.max_row
-                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
-                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+
+        # PAGARE AFFITTO
+        elif giocatore != proprietario_casella:
+            print(f"💰 Devi pagare {affitto}€ a {proprietario_casella}")
             
-                saldo_prop += affitto
-                saldo -= affitto
-                print(f"💸 {giocatore} paga {affitto}€ a {proprietario_casella}")
-                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto, saldo, "pagamento affitto"])
-                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto, saldo_prop, "incasso affitto"])
+            if proprietario_casella in wb.sheetnames:
+                foglio_prop = wb[proprietario_casella]
+                turno_prop = foglio_prop.max_row
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=7).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+
+                # Conta quante stazioni possiede il proprietario (colonna 5)
+                count = 0
+                for row in foglio_prop.iter_rows(min_row=1, min_col=5, max_col=5):
+                    cell_value = row[0].value
+                    if isinstance(cell_value, str) and cell_value.strip().lower() == "stazione":
+                        count += 1
+
+                affitto_totale = affitto * count
+                saldo -= affitto_totale
+                saldo_prop += affitto_totale
+
+                print(f"💸 {giocatore} paga {affitto_totale}€ a {proprietario_casella} (possiede {count} stazioni)")
+
+                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto_totale, saldo, "pagamento affitto"])
+                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_totale, saldo_prop, "incasso affitto"])
                 wb.save(EXCEL_PATH)
-
-
-
-
-
-
+                print(f"il {giocatore} ha pagato {affitto_totale} euro a {proprietario_casella}")
             else:
-                print("proprietario non esiste")
-
+                print("❌ Errore: foglio del proprietario non trovato.")
 
 
     return nuova_posizione
