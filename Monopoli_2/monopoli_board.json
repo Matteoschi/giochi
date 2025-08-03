@@ -47,8 +47,7 @@
         "affitto_albergo": 450,
         "ipoteca": 30,
         "stato_di_ipoteca": null,
-        "costo_casa": 50,
-        "acquistato": "matteo"
+        "costo_casa": 50
     },
     {
         "posizione": 4,
