@@ -26,20 +26,21 @@ def verifica_file(lista_giocatori):
             wb = Workbook()
             ws = wb.active
             ws.title = "Giocatori"
-            ws.append(["Giocatore", "Patrimonio"])
+            ws.append(["Giocatori"])
 
             # Aggiungi giocatori al foglio principale
             for giocatore in lista_giocatori:
-                ws.append([giocatore, PATRIMONIO_INIZIALE])
+                ws.append([giocatore])
 
             # Crea un foglio per ogni giocatore
             for giocatore in lista_giocatori:
                 foglio = wb.create_sheet(title=giocatore)
-                foglio.append(["Turno", "Casella", "tipo", "colore", "Importo", "Saldo" , "descrizione"])
+                foglio.append(["Turno", "Casella", "id", "tipo","colore","Importo", "Saldo" , "descrizione"])
 
             wb.save(EXCEL_PATH)
             print(f"✅ File '{NOME_FILE_EXCEL}' creato con i fogli dei giocatori.")
             return False, wb , ws
+        
     except Exception as e:
         print(f"❌ Errore nel controllo dei file: {e}")
         return False, None , None
@@ -50,6 +51,7 @@ def carica_imprevisti():
         with open(IMPREVISTI_PATH, 'r', encoding='utf-8') as file:
             return json.load(file)
     except json.JSONDecodeError:
+        print("❌ Errore nel file board.")
         return []
     
 def carica_board():
@@ -80,191 +82,222 @@ def aggiungi_giocatori():
                 print("✅ Giocatore aggiunto.")
                 break
     print(f"🎮 Giocatori registrati: {lista_giocatori}")
-    return lista_giocatori
+    return lista_giocatori  
 
-def apri_json():
-    with open(BOARD_PATH, 'r' , encoding="utf-8") as file:
-        return json.load(file)
     
-
 def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     try:
         dado = int(input(f"{giocatore}, lancia i dadi (2-12): "))
         if not 2 <= dado <= 12:
             print("❌ Inserisci un numero tra 2 e 12.")
-            return lancia_dadi(giocatore, posizione_corrente, board, wb)
+            return lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti)
     except ValueError:
         print("❌ Inserisci un numero valido.")
-        return lancia_dadi(giocatore, posizione_corrente, board, wb)
+        return lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti)
 
     nuova_posizione = (posizione_corrente + dado) % len(board)
-
     casella = next((p for p in board if p["posizione"] == nuova_posizione), None)
 
     if not casella:
         print("❌ Casella non trovata.")
-        return posizione_corrente  # Nessun cambiamento
+        return posizione_corrente
 
-    nome = casella['nome']
-    tipo = casella.get('tipo')
-    colore = casella.get('colore')
-    affitto = casella.get('affitto', 0)
-    proprietario = casella.get('acquistato')
-    prezzo = casella.get("prezzo", 0)
+    nome_casella = casella["nome"]
+    id_casella = casella["posizione"]
+    tipo_casella = casella.get("tipo")
+    colore_casella = casella.get("colore")
+    affitto = casella.get("affitto", 0)
+    proprietario_casella = casella.get("acquistato")
+    prezzo_casella = casella.get("prezzo", 0)
+    stato_ipoteca = casella.get("stato_di_ipoteca")
 
-    print(f"{giocatore} è atterrato su '{nome}', tipo: {tipo}, colore: {colore}")
+    print(f"{giocatore} è atterrato su {nome_casella} | tipo: {tipo_casella} | colore: {colore_casella} | proprietario: {proprietario_casella}")
 
-    # Recupera il foglio del giocatore
-    if giocatore in wb.sheetnames:
-        foglio = wb[giocatore]
-        turno = foglio.max_row  # Prima riga = intestazione
-
-        # Recupera saldo precedente se esiste
-        if turno > 1:
-            saldo_precedente = foglio.cell(row=turno, column=6).value  #scelgie la colonna 6 e la riga del turno precedente
-            if saldo_precedente is not None:
-                saldo = saldo_precedente
-            else:
-                saldo= PATRIMONIO_INIZIALE
-        else:
-            saldo = PATRIMONIO_INIZIALE
-
-        importo = 0
-
-        # Logica proprietà
-        if tipo == "proprietà":
-            if not proprietario:
-                scelta = input("🏠 Vuoi acquistare questa proprietà? (s/n): ").strip().lower()
-                if scelta == "s":
-                    if saldo >= prezzo:
-                        saldo -= prezzo
-                        importo = -prezzo
-                        casella["acquistato"] = giocatore  
-                        print(f"✅ {giocatore} ha acquistato {nome} per {prezzo}€.")
-                        # Scrivi la board aggiornata
-                        with open(BOARD_PATH, 'w', encoding='utf-8') as file:
-                            json.dump(board, file, indent=4, ensure_ascii=False)
-                    else:
-                        print("💸 Fondi insufficienti per acquistare.")
-                else:
-                    print("⏭ Hai deciso di non acquistare.")
-
-            elif proprietario != giocatore:
-                print(f"💰 La proprietà è già stata acquistata da {proprietario}. Devi pagare l'affitto di {affitto}€.")
-                importo = -affitto
-                saldo += importo  # Diminuisce saldo del giocatore attuale
-
-                # Accredita affitto al proprietario
-                if proprietario in wb.sheetnames:
-                    foglio_proprietario = wb[proprietario]
-                    turno_proprietario = foglio_proprietario.max_row  # Prima riga è intestazione
-
-                    # Recupera saldo precedente del proprietario
-                    if turno_proprietario > 1:
-                        saldo_prec = foglio_proprietario.cell(row=turno_proprietario, column=6).value
-                        saldo_proprietario = saldo_prec + affitto if saldo_prec else PATRIMONIO_INIZIALE + affitto
-                    else:
-                        saldo_proprietario = PATRIMONIO_INIZIALE + affitto
-                    foglio_proprietario.append([turno_proprietario, "", "","", affitto, saldo_proprietario,f"Incasso affitto da {giocatore}"])
-                    print(f"transazione eseguita correttamente di euro {affitto} , beneficiario {proprietario} , ordinante {giocatore} ")
-                else:
-                    print(f"⚠️ Errore: foglio del proprietario '{proprietario}' non trovato.")
-
-            elif proprietario == giocatore:
-                case_hotel = input(f"Che bello rivederti {giocatore}, vuoi costruire case o hotel? (s/n) ").strip().lower()
-                if case_hotel == "s":
-                    cosa = input("Cosa vuoi costruire? (casa/hotel): ").strip().lower()
-
-                    if cosa == "casa":
-                        try:
-                            numero_case = int(input("Quante case vuoi acquistare? (1-4): ").strip())
-                        except ValueError:
-                            print("❌ Inserisci un numero valido.")
-                            return
-
-                        if 1 <= numero_case <= 4:
-                            if numero_case == 1:
-                                chiave_affitto = f"affitto_{numero_case}_casa"
-                            else:
-                                chiave_affitto = f"affitto_{numero_case}_case"
-
-                            affitto_delle_infrastrutture = casella.get(chiave_affitto, 0)
-                            saldo -= affitto_delle_infrastrutture
-                            descrizione = f"🏠 Costruite {numero_case} case per {affitto_delle_infrastrutture} euro. Affitto ora: {affitto_delle_infrastrutture}€"
-                            foglio.append([turno, "", "", "", -affitto_delle_infrastrutture, saldo, descrizione])
-                            casella["numero_case"] = numero_case
-                        else:
-                            print("⚠️ Puoi costruire solo da 1 a 4 case.")
-
-                    elif cosa == "hotel":
-                        if not casella.get("hotel") and casella.get("numero_case", 0) == 4:
-                            hotel = casella.get("affitto_albergo", 0)
-                            saldo -= hotel
-                            descrizione = f"🏨 Costruito 1 hotel per {hotel} euro. Affitto ora: {hotel}€"
-                            foglio.append([turno, "", "", "", -hotel, saldo, descrizione])
-                            casella["hotel"] = True
-                        elif casella.get("hotel"):
-                            print("⚠️ Hai già costruito un hotel qui.")
-                        else:
-                            print("⚠️ Devi avere prima 4 case per costruire un hotel.")
-
-
-
-        if tipo == "imprevisto":
-            if imprevisti:
-                imprevisto = random.choice(imprevisti)
-                descrizione = imprevisto.get("testo")
-                importo = imprevisto.get("premio", 0)
-                saldo += importo
-                foglio.append([turno,"","","",importo,saldo,descrizione])
-                print(f"{descrizione}")
-            else:
-                print("⚠️ Nessun imprevisto disponibile.")
-
-        if tipo == "stazione":
-            if not proprietario:
-                scelta = input("🏠 Vuoi acquistare questa proprietà? (s/n): ").strip().lower()
-                if scelta == "s":
-                    if saldo >= prezzo:
-                        saldo -= prezzo
-                        importo = -prezzo
-                        casella["acquistato"] = giocatore  
-                        print(f"✅ {giocatore} ha acquistato {nome} per {prezzo}€.")
-                        # Scrivi la board aggiornata
-                        with open(BOARD_PATH, 'w', encoding='utf-8') as file:
-                            json.dump(board, file, indent=4, ensure_ascii=False)
-                    else:
-                        print("💸 Fondi insufficienti per acquistare.")
-                else:
-                    print("⏭ Hai deciso di non acquistare.")
-
-            elif proprietario != giocatore:
-                print(f"💰 La proprietà è già stata acquistata da {proprietario}. Devi pagare l'affitto di {affitto}€.")
-                importo = -affitto
-                saldo += importo  # Diminuisce saldo del giocatore attuale
-
-                # Accredita affitto al proprietario
-                if proprietario in wb.sheetnames:
-                    foglio_proprietario = wb[proprietario]
-                    turno_proprietario = foglio_proprietario.max_row  # Prima riga è intestazione
-
-                    # Recupera saldo precedente del proprietario
-                    if turno_proprietario > 1:
-                        saldo_prec = foglio_proprietario.cell(row=turno_proprietario, column=6).value
-                        saldo_proprietario = saldo_prec + affitto if saldo_prec else PATRIMONIO_INIZIALE + affitto
-                    else:
-                        saldo_proprietario = PATRIMONIO_INIZIALE + affitto
-                    foglio_proprietario.append([turno_proprietario, "", "","", affitto, saldo_proprietario,f"Incasso affitto da {giocatore}"])
-                    print(f"transazione eseguita correttamente di euro {affitto} , beneficiario {proprietario} , ordinante {giocatore} ")
-                else:
-                    print(f"⚠️ Errore: foglio del proprietario '{proprietario}' non trovato.")
-           
-        wb.save(EXCEL_PATH)
-    else:
+    if giocatore not in wb.sheetnames:
         print(f"⚠️ Foglio per {giocatore} non trovato.")
+        return nuova_posizione
+
+    foglio = wb[giocatore]
+    turno = foglio.max_row
+    saldo = foglio.cell(row=turno, column=6).value if turno > 1 else PATRIMONIO_INIZIALE
+    saldo = saldo if saldo is not None else PATRIMONIO_INIZIALE
+
+    importo = 0
+
+    if tipo_casella == "proprietà":
+        # COMPRARE LA CASE PER PRIMA VOLTA
+        if not proprietario_casella and not stato_ipoteca:
+            scelta = input(f"🏠 Vuoi acquistare {nome_casella} per {prezzo_casella}€? (s/n): ").strip().lower()
+            if scelta == "s":
+                if saldo >= prezzo_casella:
+                    saldo -= prezzo_casella
+                    casella["acquistato"] = giocatore
+                    foglio.append([turno, nome_casella, id_casella, tipo_casella, colore_casella, -prezzo_casella, saldo, "acquisto proprietà"])  # segnare il colore della casella solo quando si compra per la prima volta
+                    print(f"✅ Hai acquistato {nome_casella} per {prezzo_casella}€.")
+                    with open(BOARD_PATH, "w", encoding="utf-8") as file:
+                        json.dump(board, file, indent=4, ensure_ascii=False)
+                    wb.save(EXCEL_PATH)
+                else:
+                    print("💸 Fondi insufficienti.")
+            else:
+                print("⏭ Hai deciso di non acquistare.")
+
+
+        #PAGARE L'AFFITTO
+
+        elif giocatore != proprietario_casella and not stato_ipoteca:
+            print(f"💼 {giocatore} è atterrato su una proprietà di {proprietario_casella}.")
+            if proprietario_casella in wb.sheetnames:
+                foglio_prop = wb[proprietario_casella]
+                turno_prop = foglio_prop.max_row
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+
+                colori = {c: 0 for c in ["marrone", "celeste", "rosa", "arancione", "rosso", "giallo", "verde", "blu"]}
+                for row in foglio_prop.iter_rows(min_row=2, min_col=5, max_col=5):
+                    colore = str(row[0].value).strip().lower() if row[0].value else ""
+                    if colore in colori:
+                        colori[colore] += 1
+
+                gruppo_completo = (
+                    (colore_casella == "marrone" and colori["marrone"] == 2) or
+                    (colore_casella == "celeste" and colori["celeste"] == 3) or
+                    (colore_casella == "rosa" and colori["rosa"] == 3) or
+                    (colore_casella == "arancione" and colori["arancione"] == 3) or
+                    (colore_casella == "rosso" and colori["rosso"] == 3) or
+                    (colore_casella == "giallo" and colori["giallo"] == 3) or
+                    (colore_casella == "verde" and colori["verde"] == 3) or
+                    (colore_casella == "blu" and colori["blu"] == 2)
+                )
+
+                numero_case = casella.get("numero_case")
+                possiede_hotel = casella.get("possiede_hotel")
+
+                if gruppo_completo and numero_case is None:
+                    affitto_effettivo = affitto * 2
+                elif numero_case is None :
+                    affitto_effettivo = affitto
+                elif numero_case is not None and not possiede_hotel:
+                    affitto_effettivo = casella.get(f"affitto_{numero_case}_casa", 0)
+                elif possiede_hotel:
+                    affitto_effettivo = casella.get("affitto_albergo", 0)
+
+                saldo -= affitto_effettivo
+                saldo_prop += affitto_effettivo
+
+                print(f"💸 {giocatore} paga {affitto_effettivo}€ a {proprietario_casella}")
+
+                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto_effettivo, saldo, "pagamento affitto"])
+                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_effettivo, saldo_prop, "incasso affitto"])
+                wb.save(EXCEL_PATH)
+            else:
+                print(f"⚠️ Foglio del proprietario {proprietario_casella} non trovato.")
+
+
+
+        # STESSO PROPRIETARIO - CASE - HOTEL
+        elif giocatore == proprietario_casella and not stato_ipoteca:
+            colori = {c: 0 for c in ["marrone", "celeste", "rosa", "arancione", "rosso", "giallo", "verde", "blu"]}
+            for row in foglio.iter_rows(min_row=2, min_col=5, max_col=5):
+                colore = str(row[0].value).strip().lower() if row[0].value else ""
+                if colore in colori:
+                    colori[colore] += 1
+
+            gruppo_completo = (
+                (colore_casella == "marrone" and colori["marrone"] == 2) or
+                (colore_casella == "celeste" and colori["celeste"] == 3) or
+                (colore_casella == "rosa" and colori["rosa"] == 3) or
+                (colore_casella == "arancione" and colori["arancione"] == 3) or
+                (colore_casella == "rosso" and colori["rosso"] == 3) or
+                (colore_casella == "giallo" and colori["giallo"] == 3) or
+                (colore_casella == "verde" and colori["verde"] == 3) or
+                (colore_casella == "blu" and colori["blu"] == 2)
+            )
+
+            if gruppo_completo:
+                try:
+                    scelta = input("🏗️ Vuoi costruire? (1-4 per case, h per hotel): ").strip().lower()
+                    if scelta in ["1", "2", "3", "4"]:
+                        scelta = int(scelta)
+                        chiave_affitto = f"affitto_{scelta}_casa"
+                        costo_casa = casella.get(chiave_affitto, 0)
+                        if saldo >= costo_casa:
+                            saldo -= costo_casa
+                            casella["numero_case"] = scelta
+                            foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -costo_casa, saldo, f"acquisto {scelta} casa/e"])
+                            with open(BOARD_PATH, "w", encoding="utf-8") as file:
+                                json.dump(board, file, indent=4, ensure_ascii=False)
+                            wb.save(EXCEL_PATH)
+                            print(f"✅ Hai costruito {scelta} casa/e per {costo_casa}€.")
+                        else:
+                            print("❌ Saldo insufficiente per costruire.")
+                    elif scelta == "h" and casella.get("numero_case") == 4:
+                        costo_hotel = casella.get("affitto_albergo", 0)
+                        if saldo >= costo_hotel:
+                            saldo -= costo_hotel
+                            casella["possiede_hotel"] = True
+                            foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -costo_hotel, saldo, "acquisto hotel"])
+                            with open(BOARD_PATH, "w", encoding="utf-8") as file:
+                                json.dump(board, file, indent=4, ensure_ascii=False)
+                            wb.save(EXCEL_PATH)
+                            print(f"✅ Hai costruito un hotel per {costo_hotel}€.")
+                        else:
+                            print("❌ Saldo insufficiente per costruire hotel.")
+                    else:
+                        print("❌ Scelta non valida o non hai abbastanza case per costruire un hotel.")
+                except ValueError:
+                    print("❌ Inserisci un numero valido.")
+    
+    if tipo_casella == "tassa":
+        importo = casella.get["premio",0]
+        saldo += importo
+        foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", importo, saldo,])
+
+    
+    if tipo_casella == "stazione":
+        #COMPRARE LA STAZIONE
+        if not proprietario_casella and not stato_ipoteca:
+            scelta = input(f"🏠 Vuoi acquistare {nome_casella} per {prezzo_casella}€? (s/n): ").strip().lower()
+            if scelta == "s":
+                if saldo >= prezzo_casella:
+                    saldo -= prezzo_casella
+                    casella["acquistato"] = giocatore
+                    foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -prezzo_casella, saldo, "acquisto proprietà"]) 
+                    print(f"✅ Hai acquistato {nome_casella} per {prezzo_casella}€.")
+                    with open(BOARD_PATH, "w", encoding="utf-8") as file:
+                        json.dump(board, file, indent=4, ensure_ascii=False)
+                    wb.save(EXCEL_PATH)
+                else:
+                    print("💸 Fondi insufficienti.")
+            else:
+                print("⏭ Hai deciso di non acquistare.")
+        #PAGARE AFFITTO
+        if giocatore != proprietario_casella:
+            print(f"devi pagare {affitto} a {proprietario_casella}")
+            if proprietario_casella in wb.sheetnames:
+                foglio_prop=wb[proprietario_casella]
+                turno_prop = foglio.max_row
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+            
+                saldo_prop += affitto
+                saldo -= affitto
+                print(f"💸 {giocatore} paga {affitto}€ a {proprietario_casella}")
+                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto, saldo, "pagamento affitto"])
+                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto, saldo_prop, "incasso affitto"])
+                wb.save(EXCEL_PATH)
+
+
+
+
+
+
+            else:
+                print("proprietario non esiste")
+
+
 
     return nuova_posizione
-
 
 
 def main():
