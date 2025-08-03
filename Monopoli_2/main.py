@@ -5,7 +5,7 @@ import random
 import json
 
 # === PERCORSI E COSTANTI ===
-PATRIMONIO_INIZIALE = 1000
+PATRIMONIO_INIZIALE = 10000
 FOLDER = "Monopoli_2"
 os.makedirs(FOLDER, exist_ok=True)
 NOME_FILE_EXCEL = "monopoli_spese.xlsx"
@@ -119,7 +119,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
 
     foglio = wb[giocatore]
     turno = foglio.max_row
-    saldo = foglio.cell(row=turno, column=6).value if turno > 1 else PATRIMONIO_INIZIALE
+    saldo = foglio.cell(row=turno, column=7).value if turno > 1 else PATRIMONIO_INIZIALE
     saldo = saldo if saldo is not None else PATRIMONIO_INIZIALE
 
     importo = 0
@@ -150,7 +150,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
             if proprietario_casella in wb.sheetnames:
                 foglio_prop = wb[proprietario_casella]
                 turno_prop = foglio_prop.max_row
-                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=7).value if turno_prop > 1 else PATRIMONIO_INIZIALE
                 saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
 
                 colori = {c: 0 for c in ["marrone", "celeste", "rosa", "arancione", "rosso", "giallo", "verde", "blu"]}
@@ -188,7 +188,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                 print(f"💸 {giocatore} paga {affitto_effettivo}€ a {proprietario_casella}")
 
                 foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto_effettivo, saldo, "pagamento affitto"])
-                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_effettivo, saldo_prop, "incasso affitto"])
+                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_effettivo, saldo_prop, f"incasso affitto da {giocatore}"])
                 wb.save(EXCEL_PATH)
             else:
                 print(f"⚠️ Foglio del proprietario {proprietario_casella} non trovato.")
@@ -250,7 +250,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     
     if tipo_casella == "tassa":
         importo = casella.get("premio", 0)
-        if casella.get("speciale") is not None:
+        if casella.get("speciale") is None:
             saldo -= importo
             foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -importo, saldo, "pagamento tassa"])
             print(f"{giocatore} ha pagato {importo} euro per essere capitato {nome_casella}")
@@ -281,40 +281,41 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                 print("⏭ Hai deciso di non acquistare.")
 
         # PAGARE AFFITTO
-        elif giocatore != proprietario_casella:
-            print(f"💰 Devi pagare {affitto}€ a {proprietario_casella}")
-            
-            if proprietario_casella in wb.sheetnames:
-                foglio_prop = wb[proprietario_casella]
-                turno_prop = foglio_prop.max_row
-                saldo_prop = foglio_prop.cell(row=turno_prop, column=7).value if turno_prop > 1 else PATRIMONIO_INIZIALE
-                saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
+        if proprietario_casella:
+            if giocatore != proprietario_casella:
+                print(f"🔁 Devi pagare {affitto}€ a {proprietario_casella}")
+                
+                if proprietario_casella in wb.sheetnames:
+                    foglio_prop = wb[proprietario_casella]
+                    turno_prop = foglio_prop.max_row
+                    saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                    saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
 
-                # Conta quante stazioni possiede il proprietario (colonna 5)
-                count = 0
-                for row in foglio_prop.iter_rows(min_row=1, min_col=5, max_col=5):
-                    cell_value = row[0].value
-                    if isinstance(cell_value, str) and cell_value.strip().lower() == "stazione":
-                        count += 1
+                    # Conta quante stazioni possiede il proprietario
+                    count = 0
+                    for row in foglio_prop.iter_rows(min_row=2, min_col=5, max_col=5):
+                        cell_value = row[0].value
+                        if isinstance(cell_value, str) and "stazione" in cell_value.lower():
+                            count += 1
 
-                affitto_totale = affitto * count
-                saldo -= affitto_totale
-                saldo_prop += affitto_totale
+                    affitto_totale = affitto * count
+                    saldo -= affitto_totale
+                    saldo_prop += affitto_totale
 
-                print(f"💸 {giocatore} paga {affitto_totale}€ a {proprietario_casella} (possiede {count} stazioni)")
+                    print(f"💸 {giocatore} paga {affitto_totale}€ a {proprietario_casella} (possiede {count} stazioni)")
 
-                foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto_totale, saldo, "pagamento affitto"])
-                foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_totale, saldo_prop, "incasso affitto"])
-                wb.save(EXCEL_PATH)
-                print(f"il {giocatore} ha pagato {affitto_totale} euro a {proprietario_casella}")
-            else:
-                print("❌ Errore: foglio del proprietario non trovato.")
+                    foglio.append([turno, nome_casella, id_casella, tipo_casella, "NA", -affitto_totale, saldo, "pagamento affitto"])
+                    foglio_prop.append([turno_prop, nome_casella, id_casella, tipo_casella, "NA", affitto_totale, saldo_prop, f"incasso affitto da {giocatore}"])
+                    wb.save(EXCEL_PATH)
+
+                else:
+                    print(f"⚠️ Il foglio per il proprietario {proprietario_casella} non esiste!")
 
     if tipo_casella == "imprevisto":
-        imprevisto = random.choise(imprevisti)
+        imprevisto = random.choice(imprevisti)
         saldo += imprevisto["premio"]
         foglio.append([turno, nome_casella, imprevisto["id"], tipo_casella, "NA", imprevisto["premio"], saldo, "imprevisto"])
-        print(f"sei capitato in un imprevisto : {imprevisto["premio"]} euro sul tuo conto")
+        print(f"sei capitato in un imprevisto : {imprevisto['premio']} euro sul tuo conto")
         wb.save(EXCEL_PATH)
 
     if tipo_casella == "società":
@@ -331,12 +332,14 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                         print(f"complimenti {giocatore} hai comprato la società per {prezzo_casella} euro")
             else:
                 print("non hai abbastanza soldi")
+
+
         if giocatore != proprietario_casella:
             print(f"💼 {giocatore} è atterrato su una proprietà di {proprietario_casella}.")
             if proprietario_casella in wb.sheetnames:
                 foglio_prop = wb[proprietario_casella]
                 turno_prop = foglio_prop.max_row
-                saldo_prop = foglio_prop.cell(row=turno_prop, column=6).value if turno_prop > 1 else PATRIMONIO_INIZIALE
+                saldo_prop = foglio_prop.cell(row=turno_prop, column=7).value if turno_prop > 1 else PATRIMONIO_INIZIALE
                 saldo_prop = saldo_prop if saldo_prop is not None else PATRIMONIO_INIZIALE
             
             numero_società = 0
@@ -367,7 +370,6 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
 
 
 def main():
-
     if not os.path.exists(EXCEL_PATH):
         lista_giocatori = aggiungi_giocatori()
     else:
@@ -375,24 +377,21 @@ def main():
 
     file_esistente, wb, ws = verifica_file(lista_giocatori)
 
-
     if file_esistente:
         lista_giocatori = [
             row[0] for row in ws.iter_rows(min_row=2, max_col=1, values_only=True) if row[0]
         ]
         print(f"👥 Giocatori caricati dal file: {lista_giocatori}")
 
-    # Carica dati di gioco
     imprevisti = carica_imprevisti()
     board = carica_board()
-
-    # Posizioni iniziali
     posizioni = {g: 0 for g in lista_giocatori}
 
-    # Turno iniziale
-    for giocatore in lista_giocatori:
-        posizioni[giocatore] = lancia_dadi(giocatore, posizioni[giocatore], board , wb , imprevisti)
-
+    giocatore_corrente = 0
+    while True:
+        giocatore = lista_giocatori[giocatore_corrente]
+        posizioni[giocatore] = lancia_dadi(giocatore, posizioni[giocatore], board, wb, imprevisti)
+        giocatore_corrente = (giocatore_corrente + 1) % len(lista_giocatori)
 
 if __name__ == "__main__":
     main()

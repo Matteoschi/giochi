@@ -56,7 +56,7 @@
         "colore": null,
         "prezzo": null,
         "affitto": null,
-        "premio": 200
+        "premio": -200
     },
     {
         "posizione": 5,
@@ -289,7 +289,7 @@
         "nome": "Corso Raffaello",
         "colore": "arancione",
         "tipo": "proprietà",
-        "posizione": 13,
+        "posizione": 23,
         "prezzo": 180,
         "affitto": 14,
         "affitto_1_casa": 70,
