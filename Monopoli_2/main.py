@@ -98,10 +98,16 @@ def aggiungi_giocatori():
 
 def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
     try:
-        dado = int(input(f"{giocatore}, lancia i dadi (2-12): "))
+        scelta = input(f"{giocatore}, lancia i dadi (2-12) oppure digita 'scambio' per scambiare: ").strip().lower()
+        if scelta == "scambio":
+            scambio(wb,board)  
+            return lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti)  
+        
+        dado = int(scelta)  
         if not 2 <= dado <= 12:
             print("❌ Inserisci un numero tra 2 e 12.")
             return lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti)
+            
     except ValueError:
         print("❌ Inserisci un numero valido.")
         return lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti)
@@ -525,4 +531,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# TODO ipotecare  , scambio carte , famo tipo append colore 
+# TODO ipotecare  
