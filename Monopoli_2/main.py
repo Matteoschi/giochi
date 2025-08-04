@@ -3,6 +3,7 @@ from openpyxl import Workbook, load_workbook
 from datetime import datetime, timedelta
 import random
 import json
+import random
 
 # === PERCORSI E COSTANTI ===
 PATRIMONIO_INIZIALE = 10000
@@ -192,10 +193,13 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
 
                 if gruppo_completo and numero_case is None:
                     affitto_effettivo = affitto * 2
-                elif numero_case is None :
+                elif not gruppo_completo :
                     affitto_effettivo = affitto
-                elif numero_case is not None and not possiede_hotel:
-                    affitto_effettivo = casella.get(f"affitto_{numero_case}_casa", 0)
+                elif numero_case is not None and not possiede_hotel and gruppo_completo:
+                    if numero_case == "1":
+                        affitto_effettivo = casella.get(f"affitto_{numero_case}_casa", 0)
+                    else:
+                        affitto_effettivo = casella.get(f"affitto_{numero_case}_case", 0)
                 elif possiede_hotel:
                     affitto_effettivo = casella.get("affitto_albergo", 0)
 
@@ -236,7 +240,11 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
                     scelta = input("🏗️ Vuoi costruire? (1-4 per case, h per hotel): ").strip().lower()
                     if scelta in ["1", "2", "3", "4"]:
                         scelta = int(scelta)
-                        chiave_affitto = f"affitto_{scelta}_casa"
+                        if scelta == "1":
+                            chiave_affitto = f"affitto_{scelta}_casa"
+                        else:
+                            chiave_affitto = f"affitto_{scelta}_case"
+
                         costo_casa = casella.get(chiave_affitto, 0)
                         if saldo >= costo_casa:
                             saldo -= costo_casa
