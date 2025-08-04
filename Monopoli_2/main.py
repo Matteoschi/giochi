@@ -139,6 +139,7 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
         saldo += 200
         print(f"🎉 Passi dal Via e ricevi 200€! Saldo attuale: {saldo}€.")
         foglio.append([turno, "VIA !!", "0", "BONUS", "", 200, saldo, "passa dal via"])
+        wb.save(EXCEL_PATH)
 
     print(f"🎲 {giocatore} ha tirato {dado} e si sposta da {board[posizione_corrente]['nome']} a {casella['nome']}| tipo: {tipo_casella} | colore: {colore_casella} | proprietario: {proprietario_casella}")
 
@@ -380,8 +381,121 @@ def lancia_dadi(giocatore, posizione_corrente, board, wb, imprevisti):
             foglio_prop.append([turno, nome_casella, id_casella, tipo_casella, "Na", importo, saldo_prop, f"ottenuto pagamento società da {giocatore} "])
             wb.save(EXCEL_PATH)
 
-
     return nuova_posizione
+
+def scambio(wb, board):
+    print("🔄 Che tipo di scambio si vuole fare?")
+    scelta = input("Opzioni: soldi, proprietà").strip().lower()
+
+    if scelta not in ["soldi", "proprietà"]:
+        print("❌ Scambio non ancora supportato.")
+        return
+
+    # Selezione dei giocatori
+    while True:
+        giocatore_a = input("Chi è il beneficiario? ").strip()
+        giocatore_b = input("Chi è il donatore? ").strip()
+
+        if giocatore_a == giocatore_b:
+            print("⚠️ I giocatori devono essere diversi.")
+            continue
+
+        if giocatore_a not in wb.sheetnames:
+            print(f"❌ Giocatore '{giocatore_a}' non trovato.")
+            continue
+
+        if giocatore_b not in wb.sheetnames:
+            print(f"❌ Giocatore '{giocatore_b}' non trovato.")
+            continue
+
+        break
+
+    foglio_a = wb[giocatore_a]
+    foglio_b = wb[giocatore_b]
+
+    turno_a = foglio_a.max_row
+    turno_b = foglio_b.max_row
+
+    saldo_a = foglio_a.cell(row=turno_a, column=7).value or 0
+    saldo_b = foglio_b.cell(row=turno_b, column=7).value or 0
+
+    if scelta == "soldi":
+        try:
+            ammontare = int(input("💰 Quanto è l'ammontare da trasferire? "))
+        except ValueError:
+            print("❌ Inserisci un numero valido.")
+            return
+
+        if ammontare <= 0:
+            print("❌ L'importo deve essere positivo.")
+            return
+
+        if ammontare > saldo_b:
+            print(f"❌ Fondi insufficienti. {giocatore_b} ha solo {saldo_b}€.")
+            return
+
+        saldo_a += ammontare
+        saldo_b -= ammontare
+
+        foglio_a.append([turno_a + 1, "TRANSAZIONE", "", "", "", ammontare, saldo_a, f"DA {giocatore_b}"])
+        foglio_b.append([turno_b + 1, "TRANSAZIONE", "", "", "", -ammontare, saldo_b, f"A {giocatore_a}"])
+
+        wb.save(EXCEL_PATH)
+        print(f"✅ {giocatore_b} ha trasferito {ammontare}€ a {giocatore_a}.")
+        return
+
+    if scelta == "proprietà":
+        # Inserimento proprietà
+        proprieta_a = input(f"{giocatore_a} vuole dare (nome proprietà o lascia vuoto): ").strip().lower()
+        proprieta_b = input(f"{giocatore_b} vuole dare (nome proprietà o lascia vuoto): ").strip().lower()
+
+        try:
+            prezzo_a = int(input(f"💶 {giocatore_a} aggiunge quanti € (0 se nulla)? "))
+            prezzo_b = int(input(f"💶 {giocatore_b} aggiunge quanti € (0 se nulla)? "))
+        except ValueError:
+            print("❌ Inserisci un valore numerico valido.")
+            return
+
+        casella_a = next((p for p in board if p.get("nome", "").lower() == proprieta_a), None) if proprieta_a else None
+        casella_b = next((p for p in board if p.get("nome", "").lower() == proprieta_b), None) if proprieta_b else None
+
+        # Validazioni proprietà
+        if casella_a and casella_a.get("acquistato") != giocatore_a:
+            print(f"❌ La proprietà '{proprieta_a}' non appartiene a {giocatore_a}.")
+            return
+
+        if casella_b and casella_b.get("acquistato") != giocatore_b:
+            print(f"❌ La proprietà '{proprieta_b}' non appartiene a {giocatore_b}.")
+            return
+
+        # Verifica fondi sufficienti
+        if prezzo_a > saldo_a:
+            print(f"❌ {giocatore_a} non ha abbastanza soldi ({saldo_a}€ disponibili).")
+            return
+        if prezzo_b > saldo_b:
+            print(f"❌ {giocatore_b} non ha abbastanza soldi ({saldo_b}€ disponibili).")
+            return
+
+        # Esegui trasferimenti di proprietà
+        if casella_a:
+            casella_a["acquistato"] = giocatore_b
+            foglio_a.append([turno_a + 1, casella_a["nome"], "SCAMBIATA PER",casella_b["nome"] if casella_b else "nulla","", -prezzo_a, saldo_a - prezzo_a + prezzo_b,f"Scambiata con {giocatore_b}"])
+            foglio_b.append([turno_b + 1, casella_a["nome"], "RICEVUTA DA",giocatore_a, "", prezzo_a, saldo_b + prezzo_a - prezzo_b,f"Ricevuta da {giocatore_a}"])
+
+        if casella_b:
+            casella_b["acquistato"] = giocatore_a
+            foglio_b.append([turno_b + 2, casella_b["nome"], "SCAMBIATA PER",casella_a["nome"] if casella_a else "nulla","", -prezzo_b, saldo_b - prezzo_b + prezzo_a,f"Scambiata con {giocatore_a}"])
+            foglio_a.append([turno_a + 2, casella_b["nome"], "RICEVUTA DA",giocatore_b, "", prezzo_b, saldo_a + prezzo_b - prezzo_a,f"Ricevuta da {giocatore_b}"])
+        # Salvataggi
+        wb.save(EXCEL_PATH)
+        with open(BOARD_PATH, "w", encoding="utf-8") as file:
+            json.dump(board, file, indent=4, ensure_ascii=False)
+
+        print(f"✅ Scambio completato! {giocatore_a} e {giocatore_b} hanno scambiato proprietà e denaro.")
+
+
+
+
 
 
 def main():
