@@ -171,19 +171,17 @@ def assegna_obettivi(lista_giocatori, wb, file_obiettivi):
     wb.save(EXCEL_PATH)
     print("✅ obiettivi assegnati ai giocatori, visulaizza file exel")
 
-
-# ------------------- ASSEGNAZIONE TRUPPE -------------------
 def inserire_truppe(lista_giocatori, wb,pedine_iniziali,numero_carte):
     for giocatore in lista_giocatori:
         ws = wb[giocatore]
         # Leggi i territori dalla colonna B (righe 9-22, dove ci sono i territori)
-        for riga in range(9, numero_carte):  # righe dei territori
+        for riga in range(9, 9+numero_carte):  # righe dei territori
             territorio = ws[f"A{riga}"].value  # nome del territorio in colonna A
             if territorio:  # controlla che ci sia un territorio
                 while True:
                     try:
                         n_truppe = int(input(f"Inserire numero di truppe nel territorio '{territorio}' per {giocatore}: "))
-                        if n_truppe < 1 or n_truppe > pedine_iniziali:
+                        if n_truppe < 3 or n_truppe > pedine_iniziali:
                             print("numero truppe errato")
                         else:
                             break
@@ -206,5 +204,5 @@ if __name__ == "__main__":
     
     wb, ws = verifica_file(lista_giocatori, lista_colori, pedine_iniziali)
     assegna_obettivi(lista_giocatori, wb, file_obiettivi)
-    numero_carte = assegna_territori(file_territori, lista_giocatori, wb)
+    numero_carte= assegna_territori(file_territori, lista_giocatori, wb)
     inserire_truppe(lista_giocatori, wb,pedine_iniziali,numero_carte)
