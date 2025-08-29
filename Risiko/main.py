@@ -81,8 +81,8 @@ def verifica_file(lista_giocatori, lista_colori, pedine_iniziali):
         print(f"❌ Errore nel controllo dei file: {e}")
         return None, None
 
-
 # ------------------- PEDINE INIZIALI -------------------
+
 def pedine_distart(lista_giocatori):
     if len(lista_giocatori) == 3:
         return 35
@@ -162,7 +162,7 @@ def assegna_territori(file_territori, lista_giocatori, wb):
 
 # ------------------- ASSEGNAZIONE OBIETTIVI -------------------
 
-def assegna_obettivi(lista_giocatori, wb, file_obiettivi):
+def assegna_obiettivi(lista_giocatori, wb, file_obiettivi):
     obiettivi= file_obiettivi.copy()
     random.shuffle(obiettivi)
 
@@ -196,9 +196,6 @@ def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
 
     wb.save(EXCEL_PATH)
     print("✅ Tutte le truppe sono state salvate nel file Excel.")
-
-
-
 
 # ------------------- ASSEGNA TRUPPE PER TERRITORI -------------------
 
@@ -325,9 +322,8 @@ def passaggio_stato(donatore, beneficiario, stato):
 def attacco(lista_giocatori, giocatore):
 
     territori_giocatore , _ = visualizza_stati(giocatore)
-    print(f"Il turno è di {giocatore}")
-    stato_attacco= input("quale stato vuoi attaccare ? ").lower()
-    stato_partenza = input("da quale stato parti ? ").lower()
+    stato_attacco= input(f"{giocatore} quale stato vuoi attaccare ? ").lower()
+    stato_partenza = input(f"da quale stato parti ? ").lower()
 
     difensore = trova_giocatore(lista_giocatori, stato_attacco)
 
@@ -349,7 +345,6 @@ def attacco(lista_giocatori, giocatore):
     dado_attaccante=int(input(f"numero più alto del dado di {giocatore} "))
     dado_difensore = int(input(f"numero più alto del dado del {difensore} "))
 
-
     if dado_attaccante <= dado_difensore :
         print(f"ha vinto il {difensore}")
         aggiorna_truppe_stato(giocatore,stato_partenza,-1)
@@ -366,9 +361,20 @@ def attacco(lista_giocatori, giocatore):
                 print(f"{giocatore} non ha più truppe nello stato {stato_partenza} il paese passa a {difensore}")
                 passaggio_stato(giocatore,difensore,stato_partenza)
 
+def eliminazione_giocatore(lista_giocatori):
+    lista_sopravvissuti = []
+    for giocatore in lista_giocatori:
+        _ , n_territori = visualizza_stati(giocatore)
+        if n_territori == 0:
+            print(f"Il giocatore {giocatore} è stato SCONFITTO in quanto non possiede più territori")
+        else:
+            lista_sopravvissuti.append(giocatore)
+    return lista_giocatori
+
 
 # ------------------- MAIN -------------------
 if __name__ == "__main__":
+    # ------------------- INIZIALIZZAZIONE -------------------
     lista_giocatori, n_giocatori = aggiungi_giocatori()
     lista_colori = assegna_colore(lista_giocatori)
     pedine_iniziali = pedine_distart(lista_giocatori)
@@ -377,53 +383,71 @@ if __name__ == "__main__":
     file_obiettivi = carica_obiettivi()
     
     wb, ws = verifica_file(lista_giocatori, lista_colori, pedine_iniziali)
-    assegna_obettivi(lista_giocatori, wb, file_obiettivi)
-    numero_carte= assegna_territori(file_territori, lista_giocatori, wb)
-    inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte)
-    for giocatore in lista_giocatori:
-        continuare_ciclo = 1
-        while continuare_ciclo != 0:
+    assegna_obiettivi(lista_giocatori, wb, file_obiettivi)
+    numero_carte = assegna_territori(file_territori, lista_giocatori, wb)
+    inserire_truppe_iniziali(lista_giocatori, wb, pedine_iniziali, numero_carte)
+
+    # ------------------- CICLO DI GIOCO -------------------
+    turno = 0
+    while len(lista_giocatori) > 1:
+        giocatore = lista_giocatori[turno % len(lista_giocatori)]
+        print(f"\n--- È il turno di {giocatore} ---")
+
+        while True:
+            # scelta azione
             try:
-                turno = int(input(f"{giocatore} vuole passare il turno (1), attaccare (2) o muovere truppe (3)? "))
+                scelta_azione = int(input("Vuoi (1) passare, (2) attaccare o (3) muovere truppe? "))
             except ValueError:
                 print("Inserisci un numero valido.")
                 continue
 
-            if turno == 2:
-                continuare = 1
-                while continuare != 0:
-                    attacco(giocatore)  # oppure passare il giocatore se serve
-                    try:
-                        continuare = int(input("Per continuare digitare un numero, altrimenti 0: "))
-                    except ValueError:
-                        continuare = 0
+            # ------------------- PASSA TURNO -------------------
+            if scelta_azione == 1:
+                print(f"{giocatore} ha terminato il turno.\n")
+                break
 
-            elif turno == 3:
-                continuare = 1
-                while continuare != 0:
-                    stato_beneficiario = input("In quale stato vuoi posizionare le truppe? ").lower()
+            # ------------------- ATTACCO -------------------
+            elif scelta_azione == 2:
+                print("\n--- Modalità attacco ---")
+                while True:
+                    attacco(lista_giocatori, giocatore)
+                    continua_attacco = input("Vuoi attaccare ancora? (s/n) ").lower()
+                    if continua_attacco != 's':
+                        break
+                print("--- Fine attacco ---")
+
+            # ------------------- SPOSTAMENTO TRUPPE -------------------
+            elif scelta_azione == 3:
+                print("\n--- Modalità spostamento truppe ---")
+                while True:
                     stato_donatore = input("Da quale stato vuoi prelevare le truppe? ").lower()
+                    stato_beneficiario = input("In quale stato vuoi posizionare le truppe? ").lower()
                     try:
                         n_truppe_da_posizionare = int(input(f"Quante truppe vuoi spostare da {stato_donatore} a {stato_beneficiario}? "))
                     except ValueError:
                         print("Numero truppe non valido.")
                         continue
 
+                    truppe_disponibili, _ = trova_truppe_riga_stato(giocatore, stato_donatore)
+                    if n_truppe_da_posizionare >= truppe_disponibili:
+                        print(f"Non puoi spostare più truppe di quante ce ne sono nello stato {stato_donatore}.")
+                        continue
+
                     aggiorna_truppe_stato(giocatore, stato_donatore, -n_truppe_da_posizionare)
                     aggiorna_truppe_stato(giocatore, stato_beneficiario, n_truppe_da_posizionare)
 
-                    try:
-                        continuare = int(input("Per continuare digitare un numero, altrimenti 0: "))
-                    except ValueError:
-                        continuare = 0
+                    continua_spostamento = input("Vuoi spostare ancora delle truppe? (s/n) ").lower()
+                    if continua_spostamento != 's':
+                        break
+                print("--- Fine spostamento truppe ---")
 
-            elif turno == 1:
-                break  # passa al prossimo giocatore
             else:
-                print("Scelta non valida.")
+                print("Scelta non valida. Riprova.")
 
-            try:
-                continuare_ciclo = int(input("Per continuare digitare un numero, altrimenti 0: "))
-            except ValueError:
-                continuare_ciclo = 0
+        # ------------------- ELIMINAZIONE GIOCATORI -------------------
+        lista_giocatori = eliminazione_giocatore(lista_giocatori)
+        if len(lista_giocatori) == 1:
+            print(f"🎉 Il vincitore è {lista_giocatori[0]}!")
+            break
 
+        turno += 1
