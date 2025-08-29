@@ -151,19 +151,21 @@ def assegna_territori(file_territori, lista_giocatori, wb):
         for _ in range(numero_carte):
             territorio = territori.pop()
             ws.append([
-                territorio["nome"],
-                territorio["continente"],
-                territorio["simbolo"]
+                territorio["nome"].lower(),
+                territorio["continente"].lower(),
+                territorio["simbolo"].lower().strip()
             ])
-    # ✅ Salva Excel aggiornato
+
     wb.save(EXCEL_PATH)
-    print("✅ Territori assegnati ai giocatori, visulaizza file exel")
+    print("✅ Territori assegnati ai giocatori, visulaizzabili file exel")
     return numero_carte
 
 # ------------------- ASSEGNAZIONE OBIETTIVI -------------------
+
 def assegna_obettivi(lista_giocatori, wb, file_obiettivi):
     obiettivi= file_obiettivi.copy()
     random.shuffle(obiettivi)
+
     for giocatore in lista_giocatori:
         ws = wb[giocatore]
         obiettivo = obiettivi.pop()
@@ -171,7 +173,9 @@ def assegna_obettivi(lista_giocatori, wb, file_obiettivi):
     wb.save(EXCEL_PATH)
     print("✅ obiettivi assegnati ai giocatori, visulaizza file exel")
 
-def inserire_truppe(lista_giocatori, wb,pedine_iniziali,numero_carte):
+# ------------------- ASSEGNAZIONE TRUPPE -------------------
+
+def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
     for giocatore in lista_giocatori:
         ws = wb[giocatore]
         # Leggi i territori dalla colonna B (righe 9-22, dove ci sono i territori)
@@ -193,6 +197,98 @@ def inserire_truppe(lista_giocatori, wb,pedine_iniziali,numero_carte):
     wb.save(EXCEL_PATH)
     print("✅ Tutte le truppe sono state salvate nel file Excel.")
 
+
+
+
+# ------------------- ASSEGNA TRUPPE PER TERRITORI -------------------
+
+def conta_territori(lista_giocatori, wb):
+
+    for giocatore in lista_giocatori:
+        territori_giocatore , count= visualizza_stati(giocatore)
+
+        pedine_da_posizionare = count // 3
+        print(f"Il giocatore {giocatore} ha {count} territori, quindi spettano {pedine_da_posizionare} pedine.")
+
+        truppe_posizionate = 0
+
+        while truppe_posizionate < pedine_da_posizionare:
+            dove = input("Dove vuoi posizionare le truppe? ").strip()
+            if dove not in territori_giocatore:
+                print("⚠️ Territorio non trovato. Riprova.")
+                continue
+
+            try:
+                quante = int(input(f"Quante truppe vuoi posizionare in {dove}? "))
+            except ValueError:
+                print("❌ Inserisci un numero valido.")
+                continue
+
+            if quante <= 0 or truppe_posizionate + quante > pedine_da_posizionare:
+                print(f"⚠️ Puoi posizionare al massimo {pedine_da_posizionare - truppe_posizionate} truppe.")
+                continue
+
+            # Trova la riga del territorio e scrivi le truppe in colonna D
+            for riga in range(9, 22):
+                if ws[f"A{riga}"].value == dove:
+                    ws[f"D{riga}"] = quante
+                    break
+
+            truppe_posizionate += quante
+            print(f"✅ Posizionate {quante} truppe in {dove} ({truppe_posizionate}/{pedine_da_posizionare})")
+
+    wb.save(EXCEL_PATH)
+    print("✅ Tutte le truppe sono state salvate nel file Excel.")
+
+# ------------------- VISUALIZZA STATI (NO MAIN) -------------------
+
+def visualizza_stati(giocatore):
+    ws = wb[giocatore]
+    n_territori = 0
+    territori_giocatore = []
+    for riga in range(9, 22):  # righe dove ci sono i territori
+        nome_territorio = ws[f"A{riga}"].value
+        if nome_territorio:  # <-- meglio controllare che non sia None
+            territori_giocatore.append(nome_territorio)
+            n_territori += 1
+    return territori_giocatore, n_territori
+
+# ------------------- VISUALIZZA ARMATE PER STATI (NO MAIN) -------------------
+
+def trova_truppe_stato(giocatore, stato):
+    ws = wb[giocatore]
+    for riga in range(9, 22):
+        if ws[f"A{riga}"].value == stato:
+            return ws[f"D{riga}"].value, riga  # restituisco anche la riga
+    return 0, None
+
+# ------------------- ATTACCO -------------------
+
+def attacco(lista_giocatori):
+    for giocatore in lista_giocatori:
+
+        territori_giocatore , _ = visualizza_stati(giocatore)
+        print(f"Il turno è di {giocatore}")
+        stato_attacco= input("quale stato vuoi attaccare ? ").lower()
+        stato_partenza = input("da quale stato parti ? ").lower()
+
+        if stato_partenza not in territori_giocatore:
+            print(f"impossibile trovare lo stato di partenza di {giocatore}")
+        
+        numero_truppe_stato= trova_truppe_stato(giocatore, stato_attacco)
+        n_armate = int(input("Con quante armate desideri attaccare max 3 : "))
+        while True:
+            if n_armate > 3 or n_armate < 1:
+                print("inserire da 1-3 armate")
+                continue
+            elif n_armate > numero_truppe_stato:
+                print(f"il numero delle truppe dello stato : {stato_attacco} sono {numero_truppe_stato} impossibile utilizzare : {n_armate} armate")
+            else:
+                break
+        
+        
+
+
 # ------------------- MAIN -------------------
 if __name__ == "__main__":
     lista_giocatori, n_giocatori = aggiungi_giocatori()
@@ -205,4 +301,6 @@ if __name__ == "__main__":
     wb, ws = verifica_file(lista_giocatori, lista_colori, pedine_iniziali)
     assegna_obettivi(lista_giocatori, wb, file_obiettivi)
     numero_carte= assegna_territori(file_territori, lista_giocatori, wb)
-    inserire_truppe(lista_giocatori, wb,pedine_iniziali,numero_carte)
+    inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte)
+
+
