@@ -246,7 +246,7 @@ def visualizza_stati(giocatore):
     ws = wb[giocatore]
     n_territori = 0
     territori_giocatore = []
-    for riga in range(9, 22):  # righe dove ci sono i territori
+    for riga in range(9, 23):  # righe dove ci sono i territori
         nome_territorio = ws[f"A{riga}"].value
         if nome_territorio:  # <-- meglio controllare che non sia None
             territori_giocatore.append(nome_territorio)
@@ -255,16 +255,42 @@ def visualizza_stati(giocatore):
 
 # ------------------- VISUALIZZA ARMATE PER STATI (NO MAIN) -------------------
 
-def trova_truppe_stato(giocatore, stato):
+def trova_truppe_riga_stato(giocatore, stato):
     ws = wb[giocatore]
-    for riga in range(9, 22):
+    for riga in range(9, 23):
         if ws[f"A{riga}"].value == stato:
             return ws[f"D{riga}"].value, riga  # restituisco anche la riga
     return 0, None
 
+# ------------------- VISUALIZZA GIOCATORI CON PAESE (NO MAIN) -------------------
+def trova_giocatore(lista_giocatori, paese):
+    for giocatore in lista_giocatori:
+        ws = wb[giocatore]
+        for riga in range(9, 23):  # <-- così controlli tutte le righe da 9 a 22
+            if ws[f"A{riga}"].value == paese:
+                return giocatore
+    return None  # se non trovato
+
+
+# ------------------- AGGIORNA NUMERO TRUPPE (NO MAIN) -------------------
+def aggiorna_truppe_stato(giocatore,stato,n_truppe_aggiornate):
+    ws=wb[giocatore]
+    _ , riga =  trova_truppe_riga_stato(giocatore,stato)
+    valore_casella_attuale = ws[f"D{riga}"].value
+    ws[f"D{riga}"].value = valore_casella_attuale + n_truppe_aggiornate
+
+    print(f"{giocatore} ora ha in {stato}: {ws[f'D{riga}'].value}")
+    wb.save(EXCEL_PATH)
+    print("file aggiornato con successo")
+
+# ------------------- PASSAGGIO STATO (NO MAIN) -------------------
+
+def passaggio_stato(donatore,beneficiario,stato):
+    pass
 # ------------------- ATTACCO -------------------
 
 def attacco(lista_giocatori):
+
     for giocatore in lista_giocatori:
 
         territori_giocatore , _ = visualizza_stati(giocatore)
@@ -272,19 +298,42 @@ def attacco(lista_giocatori):
         stato_attacco= input("quale stato vuoi attaccare ? ").lower()
         stato_partenza = input("da quale stato parti ? ").lower()
 
+        difensore = trova_giocatore(lista_giocatori, stato_attacco)
+
         if stato_partenza not in territori_giocatore:
             print(f"impossibile trovare lo stato di partenza di {giocatore}")
         
-        numero_truppe_stato= trova_truppe_stato(giocatore, stato_attacco)
-        n_armate = int(input("Con quante armate desideri attaccare max 3 : "))
+        numero_truppe_stato_attaccante , _ = trova_truppe_riga_stato(giocatore, stato_partenza)
+        n_armate_attaccante = int(input(f"Con quante armate desideri attaccare {difensore} ? (max 3 ): "))
         while True:
-            if n_armate > 3 or n_armate < 1:
+            if n_armate_attaccante > 3 or n_armate_attaccante < 1:
                 print("inserire da 1-3 armate")
                 continue
-            elif n_armate > numero_truppe_stato:
-                print(f"il numero delle truppe dello stato : {stato_attacco} sono {numero_truppe_stato} impossibile utilizzare : {n_armate} armate")
+            if n_armate_attaccante >= numero_truppe_stato_attaccante:
+                print(f"Truppe nello stato {stato_partenza} insufficienti: {giocatore} ha selezionato {n_armate_attaccante} truppe, ma almeno una truppa deve rimanere nello stato di partenza.")
+                continue
             else:
                 break
+
+        dado_attaccante=int(input(f"numero più alto del dado di {giocatore} "))
+        dado_difensore = int(input(f"numero più alto del dado del {difensore} "))
+
+
+        if dado_attaccante <= dado_difensore :
+            print(f"ha vinto il {difensore}")
+            aggiorna_truppe_stato(giocatore,stato_partenza,-1)
+        else:
+            print(f"ha vinto {giocatore}")
+            aggiorna_truppe_stato(difensore,stato_attacco,-1)
+
+            numero_truppe_stato_difensore , _ = trova_truppe_riga_stato(difensore, stato_attacco)
+
+            if numero_truppe_stato_difensore == 0:
+                print(f"{difensore} non ha più truppe nello stato {stato_attacco} il paese passa a {giocatore}")
+
+
+
+        
         
         
 
