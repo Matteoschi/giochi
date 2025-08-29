@@ -5,11 +5,11 @@ import json
 
 territori = r"C:\Users\alessandrini\Documents\coding\games\Risiko\territori.json"
 obiettivi = r"C:\Users\alessandrini\Documents\coding\games\Risiko\obiettivi.json"
+continenti = r"C:\Users\alessandrini\Documents\coding\games\Risiko\continenti.json"
 FOLDER = "Risiko"
 os.makedirs(FOLDER, exist_ok=True)
 NOME_FILE_EXCEL = "RisiKo.xlsx"
 EXCEL_PATH = os.path.join(FOLDER, NOME_FILE_EXCEL)
-
 
 # ------------------- CARICAMENTO FILE -------------------
 def carica_obiettivi():
@@ -33,6 +33,18 @@ def carica_territori():
         else:
             with open(territori, 'r', encoding='utf-8') as file_territori:
                 return json.load(file_territori)
+    except json.JSONDecodeError:
+        print("❌ Errore nel file territori.json")
+        return []
+
+def carica_continenti():
+    try:
+        if not os.path.exists(continenti):
+            print(f"❌ File continenti non trovato: {continenti}")
+            return []
+        else:
+            with open(territori, 'r', encoding='utf-8') as file_continenti:
+                return json.load(file_continenti)
     except json.JSONDecodeError:
         print("❌ Errore nel file territori.json")
         return []
@@ -121,7 +133,6 @@ def aggiungi_giocatori():
     print(f"\n🎮 Giocatori registrati: {lista_giocatori}")
     return lista_giocatori, n_giocatori
 
-
 # ------------------- ASSEGNAZIONE COLORI -------------------
 def assegna_colore(lista_giocatori):
     lista_colori = []
@@ -202,7 +213,7 @@ def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
 def conta_territori(lista_giocatori, wb):
 
     for giocatore in lista_giocatori:
-        territori_giocatore , count= visualizza_stati(giocatore)
+        territori_giocatore , count= visualizza_stati_numero(giocatore)
 
         pedine_da_posizionare = count // 3
         print(f"Il giocatore {giocatore} ha {count} territori, quindi spettano {pedine_da_posizionare} pedine.")
@@ -239,7 +250,7 @@ def conta_territori(lista_giocatori, wb):
 
 # ------------------- VISUALIZZA STATI (NO MAIN) -------------------
 
-def visualizza_stati(giocatore):
+def visualizza_stati_numero(giocatore):
     ws = wb[giocatore]
     n_territori = 0
     territori_giocatore = []
@@ -321,7 +332,7 @@ def passaggio_stato(donatore, beneficiario, stato):
 
 def attacco(lista_giocatori, giocatore):
 
-    territori_giocatore , _ = visualizza_stati(giocatore)
+    territori_giocatore , _ = visualizza_stati_numero(giocatore)
     stato_attacco= input(f"{giocatore} quale stato vuoi attaccare ? ").lower()
     stato_partenza = input(f"da quale stato parti ? ").lower()
 
@@ -361,18 +372,89 @@ def attacco(lista_giocatori, giocatore):
                 print(f"{giocatore} non ha più truppe nello stato {stato_partenza} il paese passa a {difensore}")
                 passaggio_stato(giocatore,difensore,stato_partenza)
 
-def eliminazione_giocatore(lista_giocatori):
+# ------------------- ELIMINAZIONE GIOCATORE -------------------
+
+def eliminazione_giocatore(lista_giocatori, turno):
     lista_sopravvissuti = []
     for giocatore in lista_giocatori:
-        _ , n_territori = visualizza_stati(giocatore)
+        _ , n_territori = visualizza_stati_numero(giocatore)
         if n_territori == 0:
-            print(f"Il giocatore {giocatore} è stato SCONFITTO in quanto non possiede più territori")
+            print(f"Il giocatore {giocatore} è stato SCONFITTO al turno {turno} in quanto non possiede più territori")
         else:
             lista_sopravvissuti.append(giocatore)
-    return lista_giocatori
+    return lista_sopravvissuti
 
+# ------------------- VINCITORE -------------------
+
+def vincitore(giocatore, continenti):
+    ws = wb[giocatore]
+    obiettivo_assegnato = ws["B5"].value
+    territori_giocatore, numero_stati = visualizza_stati_numero(giocatore)
+
+    if obiettivo_assegnato == "Conquistare l'Europa, il Sud America e un terzo continente a scelta.":
+        
+        if all(t in territori_giocatore for t in continenti["europa"] + continenti["america_del_sud"]):
+            print(f"{giocatore} ha conquistato Europa e Sud America!")
+
+            altri_continenti = ["africa", "asia", "oceania", "america_del_nord"]
+            for cont in altri_continenti:
+                if all(t in territori_giocatore for t in continenti[cont]):
+                    print(f"{giocatore} ha conquistato anche {cont}, obiettivo completato!")
+                    return giocatore, True
+    
+    elif obiettivo_assegnato == "Conquistare l'Europa, l'Oceania e un terzo continente a scelta.":
+
+        if all(t in territori_giocatore for t in continenti["europa"] + continenti["oceania"]):
+            print(f"{giocatore} ha conquistato Europa e oceania!")
+
+            altri_continenti = ["africa", "asia", "america_del_sud", "america_del_nord"]
+            for cont in altri_continenti:
+                if all(t in territori_giocatore for t in continenti[cont]):
+                    print(f"{giocatore} ha conquistato anche {cont}, obiettivo completato!")
+                    return giocatore, True    
+
+    elif obiettivo_assegnato == "Conquistare l'Asia e il Sud America.":
+        if all(t in territori_giocatore for t in continenti["asia"] + continenti["america_del_sud"]):
+            print(f"{giocatore} ha conquistato asia e Sud America!")
+            return giocatore, True  
+
+    elif obiettivo_assegnato == "Conquistare l'Asia e l'Africa.":
+        if all(t in territori_giocatore for t in continenti["asia"] + continenti["africa"]):
+            print(f"{giocatore} ha conquistato asia e africa!")
+            return giocatore, True  
+
+    elif obiettivo_assegnato == "Conquistare il Nord America e l'Africa.":
+        if all(t in territori_giocatore for t in continenti["america_del_nord"] + continenti["africa"]):
+            print(f"{giocatore} ha conquistato nord america e africa!")
+            return giocatore, True  
+
+    elif obiettivo_assegnato == "Conquistare il Nord America e l'Oceania.":
+        if all(t in territori_giocatore for t in continenti["america_del_nord"] + continenti["oceania"]):
+            print(f"{giocatore} ha conquistato nord america e oceania!")
+            return giocatore, True    
+
+    elif obiettivo_assegnato == "Conquistare il Nord America e l'Europa.":
+        if all(t in territori_giocatore for t in continenti["america_del_nord"] + continenti["europa"]):
+            print(f"{giocatore} ha conquistato nord america e europa!")
+            return giocatore, True
+
+    elif obiettivo_assegnato == "Conquistare l'Africa e l'Europa.":
+        if all(t in territori_giocatore for t in continenti["africa"] + continenti["europa"]):
+            print(f"{giocatore} ha conquistato africa e europa!")
+            return giocatore, True
+
+    elif numero_stati == 24:
+            print(f"{giocatore} ha conquistato 24 territori!")
+            return giocatore, True
+
+    elif numero_stati == 18:
+            print(f"{giocatore} ha conquistato 18 territori!")
+            return giocatore, True  
+
+    return giocatore ,False
 
 # ------------------- MAIN -------------------
+
 if __name__ == "__main__":
     # ------------------- INIZIALIZZAZIONE -------------------
     lista_giocatori, n_giocatori = aggiungi_giocatori()
@@ -381,6 +463,7 @@ if __name__ == "__main__":
 
     file_territori = carica_territori()
     file_obiettivi = carica_obiettivi()
+    file_continenti = carica_continenti()
     
     wb, ws = verifica_file(lista_giocatori, lista_colori, pedine_iniziali)
     assegna_obiettivi(lista_giocatori, wb, file_obiettivi)
@@ -445,9 +528,13 @@ if __name__ == "__main__":
                 print("Scelta non valida. Riprova.")
 
         # ------------------- ELIMINAZIONE GIOCATORI -------------------
-        lista_giocatori = eliminazione_giocatore(lista_giocatori)
+        lista_giocatori = eliminazione_giocatore(lista_giocatori, turno)
         if len(lista_giocatori) == 1:
             print(f"🎉 Il vincitore è {lista_giocatori[0]}!")
+            break
+        giocatore_vittorioso , vittoria = vincitore(giocatore,file_continenti)
+        if vittoria == True:
+            print(f"ABBIAMO UN VINCITORE : {giocatore_vittorioso}")
             break
 
         turno += 1

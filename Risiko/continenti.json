@@ -1,0 +1,55 @@
+{
+    "europa": [
+        "islanda",
+        "gran_bretagna",
+        "europa_centrale",
+        "europa_settentrionale",
+        "ucraina",
+        "europa_meridionale"
+    ],
+    "america_del_nord": [
+        "alaska",
+        "territori_del_nord_ovest",
+        "groenlandia",
+        "alberta",
+        "ontario",
+        "quebec",
+        "stati_uniti_orientali",
+        "stati_uniti_occidentali",
+        "america_centrale"
+    ],
+    "america_del_sud": [
+        "venezuela",
+        "brasile",
+        "peru",
+        "argentina"
+    ],
+    "africa": [
+        "nord_africa",
+        "egitto",
+        "congo",
+        "africa_orientale",
+        "africa_del_sud",
+        "madagascar"
+    ],
+    "asia": [
+        "siberia",
+        "ural",
+        "jakuzia",
+        "kamchatka",
+        "afghanistan",
+        "cina",
+        "medio_oriente",
+        "india",
+        "mongolia",
+        "giappone",
+        "siam",
+        "corea"
+    ],
+    "oceania": [
+        "indonesia",
+        "nuova_guinea",
+        "australia_occidentale",
+        "australia_orientale"
+    ]
+}
