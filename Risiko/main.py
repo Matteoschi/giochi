@@ -189,25 +189,33 @@ def assegna_obiettivi(lista_giocatori, wb, file_obiettivi):
 
 def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
     for giocatore in lista_giocatori:
-        ws = wb[giocatore]
-        # Leggi i territori dalla colonna B (righe 9-22, dove ci sono i territori)
-        for riga in range(9, 9+numero_carte):  # righe dei territori
-            territorio = ws[f"A{riga}"].value  # nome del territorio in colonna A
-            if territorio:  # controlla che ci sia un territorio
-                while True:
-                    try:
-                        n_truppe = int(input(f"Inserire numero di truppe nel territorio '{territorio}' per {giocatore}: "))
-                        if n_truppe < 3 or n_truppe > pedine_iniziali:
-                            print("numero truppe errato")
-                        else:
-                            break
-                    except ValueError:
-                        print("❌ Inserisci un numero valido.")
-                ws[f"D{riga}"] = n_truppe  # scrive il numero di truppe accanto al simbolo
-        print(f"✅ Truppe assegnate per {giocatore}")
+        truppe_rimanenti  = pedine_iniziali
+        print(f"\nGiocatore {giocatore}, hai {truppe_rimanenti} truppe da posizionare.")
+        territori_giocatore, _ = visualizza_stati_numero(giocatore)
+        for territorio in territori_giocatore:
+            aggiorna_truppe_stato(giocatore, territorio, 1)
+            truppe_rimanenti -= 1
+        
+        print(f"✅ Ogni tuo territorio ha ora 1 truppa. Te ne rimangono {truppe_rimanenti} da posizionare.")
 
-    wb.save(EXCEL_PATH)
-    print("✅ Tutte le truppe sono state salvate nel file Excel.")
+        while truppe_rimanenti > 0:
+            stato_scelto= input(f"{giocatore} dove vuoi posizionare le truppe rimanenti ? ").lower().strip()
+            if stato_scelto not in territori_giocatore:
+                print("⚠️ Territorio non valido o non posseduto.")
+                continue
+            try:
+                numero_truppe = int(input(f"Quante truppe vuoi posizionare in {stato_scelto}? "))
+            except ValueError:
+                print("⚠️ Inserisci un numero valido.")
+                continue
+
+            if 1 <= numero_truppe <= truppe_rimanenti:
+                aggiorna_truppe_stato(giocatore, stato_scelto, numero_truppe)
+                truppe_rimanenti -= numero_truppe
+            else:
+                print(f"⚠️ Numero non valido. Puoi aggiungere da 1 a {truppe_rimanenti} truppe.")
+
+        print(f"✅ Tutte le truppe sono state posizionate per il giocatore {giocatore}.")
 
 # ------------------- ASSEGNA TRUPPE PER TERRITORI -------------------
 
@@ -236,7 +244,7 @@ def assegna_turno_truppe(giocatore, wb):
 
     if all(t in territori_giocatore for t in continenti["africa"]):
         pedine_da_posizionare += 3
-        print(f"✅ {giocatore} ha conquistato tutti i territori in Africa e guadagna 5 pedine extra!")
+        print(f"✅ {giocatore} ha conquistato tutti i territori in Africa e guadagna 3 pedine extra!")
 
     if all(t in territori_giocatore for t in continenti["oceania"]):
         pedine_da_posizionare += 2
