@@ -2,6 +2,7 @@ import os
 from openpyxl import Workbook, load_workbook
 import random
 import json
+from collections import Counter
 
 territori = r"C:\Users\alessandrini\Documents\coding\games\Risiko\territori.json"
 obiettivi = r"C:\Users\alessandrini\Documents\coding\games\Risiko\obiettivi.json"
@@ -43,10 +44,10 @@ def carica_continenti():
             print(f"❌ File continenti non trovato: {continenti}")
             return []
         else:
-            with open(territori, 'r', encoding='utf-8') as file_continenti:
+            with open(continenti, 'r', encoding='utf-8') as file_continenti:
                 return json.load(file_continenti)
     except json.JSONDecodeError:
-        print("❌ Errore nel file territori.json")
+        print("❌ Errore nel file continenti.json")
         return []
 
 
@@ -210,40 +211,64 @@ def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
 
 # ------------------- ASSEGNA TRUPPE PER TERRITORI -------------------
 
-def conta_territori(lista_giocatori, wb):
+def assegna_turno_truppe(giocatore, wb):
 
-    for giocatore in lista_giocatori:
-        territori_giocatore , count= visualizza_stati_numero(giocatore)
+    territori_giocatore , count= visualizza_stati_numero(giocatore)
 
-        pedine_da_posizionare = count // 3
-        print(f"Il giocatore {giocatore} ha {count} territori, quindi spettano {pedine_da_posizionare} pedine.")
+    pedine_da_posizionare = count // 3
+    print(f"Il giocatore {giocatore} ha {count} territori, quindi spettano {pedine_da_posizionare} pedine.")
 
-        truppe_posizionate = 0
+    if all(t in territori_giocatore for t in continenti["europa"]):
+        pedine_da_posizionare += 5
+        print(f"✅ {giocatore} ha conquistato tutti i territori in Europa e guadagna 5 pedine extra!")
 
-        while truppe_posizionate < pedine_da_posizionare:
-            dove = input("Dove vuoi posizionare le truppe? ").strip()
-            if dove not in territori_giocatore:
-                print("⚠️ Territorio non trovato. Riprova.")
-                continue
+    if all(t in territori_giocatore for t in continenti["asia"]):
+        pedine_da_posizionare += 7
+        print(f"✅ {giocatore} ha conquistato tutti i territori in Asia e guadagna 7 pedine extra!")
 
-            try:
-                quante = int(input(f"Quante truppe vuoi posizionare in {dove}? "))
-            except ValueError:
-                print("❌ Inserisci un numero valido.")
-                continue
+    if all(t in territori_giocatore for t in continenti["america_del_nord"]):
+        pedine_da_posizionare += 5
+        print(f"✅ {giocatore} ha conquistato tutti i territori in America del Nord e guadagna 5 pedine extra!")
 
-            if quante <= 0 or truppe_posizionate + quante > pedine_da_posizionare:
-                print(f"⚠️ Puoi posizionare al massimo {pedine_da_posizionare - truppe_posizionate} truppe.")
-                continue
+    if all(t in territori_giocatore for t in continenti["america_del_sud"]):
+        pedine_da_posizionare += 2
+        print(f"✅ {giocatore} ha conquistato tutti i territori in America del Sud e guadagna 2 pedine extra!")
 
-            # Trova la riga del territorio e scrivi le truppe in colonna D
-            for riga in range(9, 22):
-                if ws[f"A{riga}"].value == dove:
-                    ws[f"D{riga}"] = quante
-                    break
+    if all(t in territori_giocatore for t in continenti["africa"]):
+        pedine_da_posizionare += 3
+        print(f"✅ {giocatore} ha conquistato tutti i territori in Africa e guadagna 5 pedine extra!")
 
-            truppe_posizionate += quante
-            print(f"✅ Posizionate {quante} truppe in {dove} ({truppe_posizionate}/{pedine_da_posizionare})")
+    if all(t in territori_giocatore for t in continenti["oceania"]):
+        pedine_da_posizionare += 2
+        print(f"✅ {giocatore} ha conquistato tutti i territori in Oceania e guadagna 2 pedine extra!")
+    
+    inserisci_truppe(giocatore, pedine_da_posizionare, wb)
+
+
+def inserisci_truppe(giocatore, pedine_da_posizionare, wb):
+    ws=wb[giocatore]
+    truppe_posizionate = 0
+    territori_giocatore , _ = visualizza_stati_numero(giocatore)
+    while truppe_posizionate < pedine_da_posizionare:
+        dove = input("Dove vuoi posizionare le truppe? ").strip()
+        if dove not in territori_giocatore:
+            print("⚠️ Territorio non trovato. Riprova.")
+            continue
+        try:
+            quante = int(input(f"Quante truppe vuoi posizionare in {dove}? "))
+        except ValueError:
+            print("❌ Inserisci un numero valido.")
+            continue
+
+        if quante <= 0 or truppe_posizionate + quante > pedine_da_posizionare:
+            print(f"⚠️ Puoi posizionare al massimo {pedine_da_posizionare - truppe_posizionate} truppe.")
+            continue
+
+        # Trova la riga del territorio e scrivi le truppe in colonna D in questo modo non vengono sovrascrtte ma aggiunte
+        aggiorna_truppe_stato(giocatore,dove,quante)
+
+        truppe_posizionate += quante
+        print(f"✅ Posizionate {quante} truppe in {dove} ({truppe_posizionate}/{pedine_da_posizionare})")
 
     wb.save(EXCEL_PATH)
     print("✅ Tutte le truppe sono state salvate nel file Excel.")
@@ -269,6 +294,16 @@ def trova_truppe_riga_stato(giocatore, stato):
         if ws[f"A{riga}"].value == stato:
             return ws[f"D{riga}"].value, riga  # restituisco anche la riga
     return 0, None
+# ------------------- VISUALIZZA CARTE  -------------------
+
+def trova_carte(giocatore):
+    ws = wb[giocatore]
+    lista_carte_giocatore = []
+    for riga in range(9,23):
+        carta= ws[f"C{riga}"].value
+        if carta:
+            lista_carte_giocatore.append(carta)
+    return lista_carte_giocatore
 
 # ------------------- VISUALIZZA GIOCATORI CON PAESE (NO MAIN) -------------------
 def trova_giocatore(lista_giocatori, paese):
@@ -293,40 +328,44 @@ def aggiorna_truppe_stato(giocatore,stato,n_truppe_aggiornate):
 
 # ------------------- PASSAGGIO STATO (NO MAIN) -------------------
 
+# Codice corretto
 def passaggio_stato(donatore, beneficiario, stato):
-    # ws del donatore e beneficiario
+
     ws_donatore = wb[donatore]
     ws_beneficiario = wb[beneficiario]
 
-    # cerca la riga del territorio nello stato donatore
-    _, riga = trova_truppe_riga_stato(donatore, stato)
-
-    if riga is None:
-        print(f"{stato} non trovato tra i territori di {donatore}")
+    # Trova la riga del territorio nello stato donatore
+    n_truppe_donatore, riga_donatore = trova_truppe_riga_stato(donatore, stato)
+    
+    if riga_donatore is None:
+        print(f"❌ {stato} non trovato tra i territori di {donatore}")
         return
 
-    # leggi i dati del territorio
-    nome = ws_donatore[f"A{riga}"].value
-    continente = ws_donatore[f"B{riga}"].value
-    simbolo = ws_donatore[f"C{riga}"].value
+    # Chiedi quante truppe spostare. Almeno una truppa deve passare.
+    while True:
+        try:
+            n_truppe_spostate = int(input(f"Quante truppe vuoi spostare da {donatore} a {beneficiario}? (Minimo 1): "))
+            if 1 <= n_truppe_spostate <= n_truppe_donatore:
+                break
+            else:
+                print(f"⚠️ Numero di truppe non valido. Devono essere tra 1 e {n_truppe_donatore}.")
+        except ValueError:
+            print("❌ Inserisci un numero valido.")
 
-    n_truppe_spostate= int(input("quante truppe vuoi spostare ? min 1"))
+    # Leggi i dati del territorio dal foglio del donatore
+    nome = ws_donatore[f"A{riga_donatore}"].value
+    continente = ws_donatore[f"B{riga_donatore}"].value
+    simbolo = ws_donatore[f"C{riga_donatore}"].value
 
-    # aggiungi il territorio al beneficiario
-    ws_beneficiario.append([
-        nome.lower(),
-        continente.lower(),
-        simbolo.lower(),
-        n_truppe_spostate  # puoi decidere quante truppe lasciare
-    ])
+    # Rimuovi il territorio e le truppe dal donatore
+    for col in ["A", "B", "C", "D"]:
+        ws_donatore[f"{col}{riga_donatore}"].value = None
 
-    # elimina il territorio dal donatore (svuota riga)
-    for col in ["A","B","C","D"]:
-        ws_donatore[f"{col}{riga}"].value = None
+    # Aggiungi il territorio e le truppe al beneficiario
+    ws_beneficiario.append([nome, continente, simbolo, n_truppe_spostate])
 
     wb.save(EXCEL_PATH)
-    print(f"{stato} trasferito da {donatore} a {beneficiario} con successo.")
-
+    print(f"✅ {stato} trasferito da {donatore} a {beneficiario} con successo, con {n_truppe_spostate} truppe.")
 
 # ------------------- ATTACCO -------------------
 
@@ -340,8 +379,10 @@ def attacco(lista_giocatori, giocatore):
 
     if stato_partenza not in territori_giocatore:
         print(f"impossibile trovare lo stato di partenza di {giocatore}")
+        return
     
     numero_truppe_stato_attaccante , _ = trova_truppe_riga_stato(giocatore, stato_partenza)
+
     n_armate_attaccante = int(input(f"Con quante armate desideri attaccare {difensore} ? (max 3 ): "))
     while True:
         if n_armate_attaccante > 3 or n_armate_attaccante < 1:
@@ -475,6 +516,44 @@ if __name__ == "__main__":
     while len(lista_giocatori) > 1:
         giocatore = lista_giocatori[turno % len(lista_giocatori)]
         print(f"\n--- È il turno di {giocatore} ---")
+        assegna_turno_truppe(giocatore, wb)
+
+        lista_carte_giocatore = trova_carte(giocatore)
+
+        conteggio = Counter(lista_carte_giocatore)
+
+        if  conteggio["fante"] >= 3 or conteggio["cannone"] >= 3 or conteggio["cavallo"] >= 3 or (conteggio["fante"] >=1 and conteggio["cannone"] >=1 and conteggio["cavallo"] >=1):
+            scelta_carte = input(f"{giocatore} , hai il diritto a utilizzare un tris di carte , le vuoi usare ? (s/n) : ").lower().strip()
+            if scelta_carte == "s":
+                try:
+                    quale_tris = int(input("Quale tris? 1:(fante) 2:(cannone) 3:(cavallo) 4:(tris misto) "))
+                except ValueError:
+                    print("❌ Devi inserire un numero valido (1-4).")
+                    quale_tris = 0
+                if quale_tris == 1:
+                    if conteggio["fante"] >= 3:
+                        print("benissimo hai 3 fanti nella lista")
+                        inserisci_truppe(giocatore, 6, wb)
+                    else:
+                        print("non ha abbastanaza fanti nella lista")
+                elif quale_tris == 2:
+                    if conteggio["cannone"] >= 3:
+                        print("benissimo hai 3 cannoni nella lista")
+                        inserisci_truppe(giocatore, 4, wb)
+                    else:
+                        print("non ha abbastanaza cannoni nella lista")
+                elif quale_tris == 3:
+                    if conteggio["cavallo"] >= 3:
+                        print("benissimo hai 3 cavalli nella lista")
+                        inserisci_truppe(giocatore, 10, wb)
+                    else:
+                        print("non ha abbastanaza cavalli nella lista")
+                elif quale_tris == 4:
+                    if conteggio["fante"] >= 1 and conteggio["cannone"] >= 1 and conteggio["cavallo"] >= 1:
+                        print("benissimo hai un fante, un cannone e un cavallo nella lista")
+                        inserisci_truppe(giocatore, 10, wb)
+                    else:
+                        print("non ha abbastanaza carte per il tris misto")
 
         while True:
             # scelta azione
