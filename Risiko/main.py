@@ -187,7 +187,7 @@ def assegna_obiettivi(lista_giocatori, wb, file_obiettivi):
 
 # ------------------- ASSEGNAZIONE TRUPPE -------------------
 
-def inserire_truppe_iniziali(lista_giocatori, wb,pedine_iniziali,numero_carte):
+def inserire_truppe_iniziali(lista_giocatori,pedine_iniziali):
     for giocatore in lista_giocatori:
         truppe_rimanenti  = pedine_iniziali
         print(f"\nGiocatore {giocatore}, hai {truppe_rimanenti} truppe da posizionare.")
@@ -324,13 +324,27 @@ def trova_giocatore(lista_giocatori, paese):
 
 
 # ------------------- AGGIORNA NUMERO TRUPPE (NO MAIN) -------------------
-def aggiorna_truppe_stato(giocatore,stato,n_truppe_aggiornate):
-    ws=wb[giocatore]
-    _ , riga =  trova_truppe_riga_stato(giocatore,stato)
+def aggiorna_truppe_stato(giocatore, stato, n_truppe_aggiornate):
+    ws = wb[giocatore]
+    _, riga = trova_truppe_riga_stato(giocatore, stato)
+    
+    # Controlla se la riga è stata trovata
+    if riga is None:
+        print(f"❌ Errore: Stato '{stato}' non trovato per il giocatore '{giocatore}'.")
+        return
+        
     valore_casella_attuale = ws[f"D{riga}"].value
+    if valore_casella_attuale is None:
+        valore_casella_attuale = 0
+    try:
+        valore_casella_attuale = int(valore_casella_attuale)
+    except (ValueError, TypeError):
+        print(f"⚠️ Attenzione: Il valore nella cella D{riga} non è un numero valido. Impostato a 0.")
+        valore_casella_attuale = 0
+
     ws[f"D{riga}"].value = valore_casella_attuale + n_truppe_aggiornate
 
-    print(f"{giocatore} ora ha in {stato}: {ws[f'D{riga}'].value}")
+    print(f"✅ {giocatore} ora ha in {stato}: {ws[f'D{riga}'].value}")
     wb.save(EXCEL_PATH)
     print("file aggiornato con successo")
 
@@ -378,48 +392,100 @@ def passaggio_stato(donatore, beneficiario, stato):
 # ------------------- ATTACCO -------------------
 
 def attacco(lista_giocatori, giocatore):
-
     territori_giocatore , _ = visualizza_stati_numero(giocatore)
-    stato_attacco= input(f"{giocatore} quale stato vuoi attaccare ? ").lower()
-    stato_partenza = input(f"da quale stato parti ? ").lower()
+    stato_attacco = input(f"{giocatore}, quale stato vuoi attaccare? ").lower()
+    stato_partenza = input(f"Da quale stato parti? ").lower()
 
     difensore = trova_giocatore(lista_giocatori, stato_attacco)
 
     if stato_partenza not in territori_giocatore:
-        print(f"impossibile trovare lo stato di partenza di {giocatore}")
+        print(f"❌ Impossibile trovare lo stato di partenza di {giocatore}")
         return
     
     numero_truppe_stato_attaccante , _ = trova_truppe_riga_stato(giocatore, stato_partenza)
+    numero_truppe_stato_difensore , _ = trova_truppe_riga_stato(difensore, stato_attacco)
 
-    n_armate_attaccante = int(input(f"Con quante armate desideri attaccare {difensore} ? (max 3 ): "))
+    if numero_truppe_stato_attaccante <= 1:
+        print(f"⚠️ {giocatore} non ha abbastanza truppe nello stato {stato_partenza}.")
+        return
+
+    # scelta dadi attaccante
     while True:
-        if n_armate_attaccante > 3 or n_armate_attaccante < 1:
-            print("inserire da 1-3 armate")
+        try:
+            n_dadi_attaccante = int(input("Con quanti dadi vuoi attaccare? (1-3) "))
+        except ValueError:
+            print("❌ Inserisci un numero valido.")
             continue
-        if n_armate_attaccante >= numero_truppe_stato_attaccante:
-            print(f"Truppe nello stato {stato_partenza} insufficienti: {giocatore} ha selezionato {n_armate_attaccante} truppe, ma almeno una truppa deve rimanere nello stato di partenza.")
+
+        if not (1 <= n_dadi_attaccante <= 3):
+            print("⚠️ Devi scegliere da 1 a 3 dadi.")
             continue
+        if n_dadi_attaccante >= numero_truppe_stato_attaccante:
+            print(f"⚠️ Hai solo {numero_truppe_stato_attaccante} truppe in {stato_partenza}, "
+                  f"quindi puoi tirare al massimo {numero_truppe_stato_attaccante - 1} dadi.")
+            continue
+        break
+
+    # scelta dadi difensore
+    while True:
+        try:
+            n_dadi_difensore = int(input("Con quanti dadi vuoi difendere? (1-2) "))
+        except ValueError:
+            print("❌ Inserisci un numero valido.")
+            continue
+
+        if not (1 <= n_dadi_difensore <= 2):
+            print("⚠️ Devi scegliere da 1 a 2 dadi.")
+            continue
+        if n_dadi_difensore > numero_truppe_stato_difensore:
+            print(f"⚠️ {difensore} ha solo {numero_truppe_stato_difensore} truppe "
+                  f"in {stato_attacco}, quindi può tirare al massimo {numero_truppe_stato_difensore} dadi.")
+            continue
+        break
+
+    print(f"✅ {giocatore} attacca con {n_dadi_attaccante} dadi")
+    print(f"✅ {difensore} difende con {n_dadi_difensore} dadi")
+
+    
+    # Attaccante
+    dadi_attaccante = []
+    for i in range(n_dadi_attaccante):
+        dado = int(input(f"Inserisci numero dado {i+1} di {giocatore}: "))
+        dadi_attaccante.append(dado)
+
+    # Difensore
+    dadi_difensore = []
+    for i in range(n_dadi_difensore):
+        dado = int(input(f"Inserisci numero dado {i+1} di {difensore}: "))
+        dadi_difensore.append(dado)
+
+    # Ordina i dadi dal più alto al più basso
+    dadi_attaccante.sort(reverse=True)
+    dadi_difensore.sort(reverse=True)
+
+    # Confronta i primi "n" dadi
+    n_confronti = min(len(dadi_attaccante), len(dadi_difensore))
+
+    perdite_attaccante = 0
+    perdite_difensore = 0
+
+    for i in range(n_confronti):
+        if dadi_attaccante[i] > dadi_difensore[i]:
+            perdite_difensore += 1
         else:
-            break
+            perdite_attaccante += 1
 
-    dado_attaccante=int(input(f"numero più alto del dado di {giocatore} "))
-    dado_difensore = int(input(f"numero più alto del dado del {difensore} "))
+    print(f"{giocatore} perde {perdite_attaccante} truppe")
+    print(f"{difensore} perde {perdite_difensore} truppe")
 
-    if dado_attaccante <= dado_difensore :
-        print(f"ha vinto il {difensore}")
-        aggiorna_truppe_stato(giocatore,stato_partenza,-1)
-    else:
-        print(f"ha vinto {giocatore}")
-        aggiorna_truppe_stato(difensore,stato_attacco,-1)
+    aggiorna_truppe_stato(giocatore, stato_partenza, -perdite_attaccante)
+    aggiorna_truppe_stato(difensore, stato_attacco, -perdite_difensore)
 
-        numero_truppe_stato_difensore , _ = trova_truppe_riga_stato(difensore, stato_attacco)
+    numero_truppe_stato_difensore , _ = trova_truppe_riga_stato(difensore, stato_attacco)
 
-        if numero_truppe_stato_difensore == 0:
-            print(f"{difensore} non ha più truppe nello stato {stato_attacco} il paese passa a {giocatore}")
-            passaggio_stato(difensore,giocatore,stato_attacco)
-        elif numero_truppe_stato_attaccante == 0:
-                print(f"{giocatore} non ha più truppe nello stato {stato_partenza} il paese passa a {difensore}")
-                passaggio_stato(giocatore,difensore,stato_partenza)
+    if numero_truppe_stato_difensore == 0:
+        print(f"{difensore} non ha più truppe nello stato {stato_attacco} il paese passa a {giocatore}")
+        passaggio_stato(difensore,giocatore,stato_attacco)
 
 # ------------------- ELIMINAZIONE GIOCATORE -------------------
 
@@ -517,7 +583,7 @@ if __name__ == "__main__":
     wb, ws = verifica_file(lista_giocatori, lista_colori, pedine_iniziali)
     assegna_obiettivi(lista_giocatori, wb, file_obiettivi)
     numero_carte = assegna_territori(file_territori, lista_giocatori, wb)
-    inserire_truppe_iniziali(lista_giocatori, wb, pedine_iniziali, numero_carte)
+    inserire_truppe_iniziali(lista_giocatori, pedine_iniziali)
 
     # ------------------- CICLO DI GIOCO -------------------
     turno = 0
@@ -542,24 +608,33 @@ if __name__ == "__main__":
                     if conteggio["fante"] >= 3:
                         print("benissimo hai 3 fanti nella lista")
                         inserisci_truppe(giocatore, 6, wb)
+                        for _ in range(3):
+                            lista_carte_giocatore.remove("fante")
                     else:
                         print("non ha abbastanaza fanti nella lista")
                 elif quale_tris == 2:
                     if conteggio["cannone"] >= 3:
                         print("benissimo hai 3 cannoni nella lista")
                         inserisci_truppe(giocatore, 4, wb)
+                        for _ in range(3):
+                            lista_carte_giocatore.remove("cannone")
                     else:
                         print("non ha abbastanaza cannoni nella lista")
                 elif quale_tris == 3:
                     if conteggio["cavallo"] >= 3:
                         print("benissimo hai 3 cavalli nella lista")
                         inserisci_truppe(giocatore, 10, wb)
+                        for _ in range(3):
+                            lista_carte_giocatore.remove("cavallo")
                     else:
                         print("non ha abbastanaza cavalli nella lista")
                 elif quale_tris == 4:
                     if conteggio["fante"] >= 1 and conteggio["cannone"] >= 1 and conteggio["cavallo"] >= 1:
                         print("benissimo hai un fante, un cannone e un cavallo nella lista")
                         inserisci_truppe(giocatore, 10, wb)
+                        lista_carte_giocatore.remove("fante")
+                        lista_carte_giocatore.remove("cannone")
+                        lista_carte_giocatore.remove("cavallo")
                     else:
                         print("non ha abbastanaza carte per il tris misto")
 
