@@ -180,8 +180,9 @@ Territories Table:
     "simbolo": "cavallo"
   }
 ]
-
-obiettivi.json
+```
+### obiettivi.json
+```json
 [
   { "descrizione": "Conquistare l'Asia e l'Africa." },
   { "descrizione": "Conquistare il Nord America e l'Europa." },
