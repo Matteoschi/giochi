@@ -33,6 +33,7 @@ def carica_territori():
             return []
         else:
             with open(territori, 'r', encoding='utf-8') as file_territori:
+                print("✅ File territori caricato con successo.")
                 return json.load(file_territori)
     except json.JSONDecodeError:
         print("❌ Errore nel file territori.json")
@@ -45,6 +46,7 @@ def carica_continenti():
             return []
         else:
             with open(continenti, 'r', encoding='utf-8') as file_continenti:
+                print("✅ File continenti caricato con successo.")
                 return json.load(file_continenti)
     except json.JSONDecodeError:
         print("❌ Errore nel file continenti.json")
@@ -70,6 +72,7 @@ def verifica_file(lista_giocatori, lista_colori, pedine_iniziali):
             foglio = wb.create_sheet(title=giocatore)
             
             # Intestazione informazioni generali
+            print(f"# Intestazione informazioni generali per {giocatore}")
             foglio["A1"] = "Giocatore"
             foglio["B1"] = giocatore
             foglio["A2"] = "Colore"
@@ -79,7 +82,7 @@ def verifica_file(lista_giocatori, lista_colori, pedine_iniziali):
             foglio["A5"] = "OBIETTIVO SEGRETO"
             # Lasciamo B5 vuota, verrà riempita dalla funzione assegna_obiettivi
 
-            # Spazio prima dei territori
+            print(f"# Intestazione territori per {giocatore}")
             foglio["A7"] = "Territori"
             foglio["A8"] = "Nome"
             foglio["B8"] = "Continente"
@@ -108,45 +111,19 @@ def pedine_distart(lista_giocatori):
 
 # ------------------- GIOCATORI -------------------
 def aggiungi_giocatori():
-    lista_giocatori = []
-    while True:
-        try:
-            n_giocatori = int(input("Inserisci numero giocatori (3-6): "))
-            if 3 <= n_giocatori <= 6:
-                break
-            else:
-                print("⚠️ I giocatori devono essere almeno 3 e massimo 6.")
-        except ValueError:
-            print("❌ Inserisci un numero valido.")
-
-    for i in range(n_giocatori):
-        while True:
-            nome = input(f"Inserisci nome giocatore {i+1}: ").strip().capitalize()
-            if not nome:
-                print("⚠️ Inserire un nome valido.")
-            elif nome in lista_giocatori:
-                print("⚠️ Nome già inserito, scegline un altro.")
-            else:
-                lista_giocatori.append(nome)
-                print(f"✅ Giocatore '{nome}' aggiunto.")
-                break
-
+    lista_giocatori = ["agata","matteo","asia","francesca","martina"]
+    n_giocatori=len(lista_giocatori)
     print(f"\n🎮 Giocatori registrati: {lista_giocatori}")
     return lista_giocatori, n_giocatori
 
 # ------------------- ASSEGNAZIONE COLORI -------------------
 def assegna_colore(lista_giocatori):
-    lista_colori = []
-    for giocatore in lista_giocatori:
-        while True:
-            colore = input(f"Inserisci colore per {giocatore} : ").strip().lower()
-            if colore not in ["giallo", "rosso", "verde", "blu", "viola", "nero"]:
-                print("⚠️ Colore non valido")
-            elif colore in lista_colori:
-                print("⚠️ Colore già scelto da un altro giocatore")
-            else:
-                lista_colori.append(colore)
-                break
+    colori_disponibili = ["giallo", "rosso", "verde", "blu", "viola", "nero"]
+    random.shuffle(colori_disponibili)
+    print("\n🎨 Colori assegnati:")
+    lista_colori = colori_disponibili[:len(lista_giocatori)]
+    for giocatore, colore in zip(lista_giocatori, lista_colori):
+        print(f" - {giocatore}: {colore}")
     return lista_colori
 
 # ------------------- ASSEGNAZIONE TERRITORI -------------------
@@ -160,7 +137,7 @@ def assegna_territori(file_territori, lista_giocatori, wb):
     for giocatore in lista_giocatori:
         ws = wb[giocatore]
 
-        for _ in (numero_carte):
+        for _ in range(numero_carte):
             territorio = territori.pop()
             ws.append([
                 territorio["nome"].lower(),
@@ -182,8 +159,9 @@ def assegna_obiettivi(lista_giocatori, wb, file_obiettivi):
         ws = wb[giocatore]
         obiettivo = obiettivi.pop()
         ws["B5"] = obiettivo["descrizione"]  # Obiettivo segreto in B5
+        print(f"✅ Obiettivo per {giocatore} assegnato.")
     wb.save(EXCEL_PATH)
-    print("✅ obiettivi assegnati ai giocatori, visulaizza file exel")
+    print(" \n obiettivi assegnati ai giocatori, visulaizza file exel")
 
 # ------------------- ASSEGNAZIONE TRUPPE -------------------
 
@@ -199,21 +177,12 @@ def inserire_truppe_iniziali(lista_giocatori,pedine_iniziali):
         print(f"✅ Ogni tuo territorio ha ora 1 truppa. Te ne rimangono {truppe_rimanenti} da posizionare.")
 
         while truppe_rimanenti > 0:
-            stato_scelto= input(f"{giocatore} dove vuoi posizionare le truppe rimanenti ? ").lower().strip()
-            if stato_scelto not in territori_giocatore:
-                print("⚠️ Territorio non valido o non posseduto.")
-                continue
-            try:
-                numero_truppe = int(input(f"Quante truppe vuoi posizionare in {stato_scelto}? "))
-            except ValueError:
-                print("⚠️ Inserisci un numero valido.")
-                continue
-
-            if 1 <= numero_truppe <= truppe_rimanenti:
-                aggiorna_truppe_stato(giocatore, stato_scelto, numero_truppe)
-                truppe_rimanenti -= numero_truppe
-            else:
-                print(f"⚠️ Numero non valido. Puoi aggiungere da 1 a {truppe_rimanenti} truppe.")
+            i = random.randint(0, len(territori_giocatore) - 1)
+            stato_scelto=territori_giocatore[i]
+            territori_giocatore.remove(stato_scelto)
+            numero_truppe=random.randint(1,truppe_rimanenti)
+            aggiorna_truppe_stato(giocatore, stato_scelto, numero_truppe)
+            truppe_rimanenti -= numero_truppe
 
         print(f"✅ Tutte le truppe sono state posizionate per il giocatore {giocatore}.")
 
@@ -254,24 +223,13 @@ def assegna_turno_truppe(giocatore, wb, continenti):
 
 
 def inserisci_truppe(giocatore, pedine_da_posizionare, wb):
-    ws=wb[giocatore]
     truppe_posizionate = 0
     territori_giocatore , _ = visualizza_stati_numero(giocatore)
     while truppe_posizionate < pedine_da_posizionare:
-        dove = input("Dove vuoi posizionare le truppe? ").strip()
-        if dove not in territori_giocatore:
-            print("⚠️ Territorio non trovato. Riprova.")
-            continue
-        try:
-            quante = int(input(f"Quante truppe vuoi posizionare in {dove}? "))
-        except ValueError:
-            print("❌ Inserisci un numero valido.")
-            continue
-
-        if quante <= 0 or truppe_posizionate + quante > pedine_da_posizionare:
-            print(f"⚠️ Puoi posizionare al massimo {pedine_da_posizionare - truppe_posizionate} truppe.")
-            continue
-
+        i = random.randint(0,len(territori_giocatore)-1)
+        dove = territori_giocatore[i]
+        quante = random.randint(1, pedine_da_posizionare - truppe_posizionate)
+        territori_giocatore.remove(dove)
         # Trova la riga del territorio e scrivi le truppe in colonna D in questo modo non vengono sovrascrtte ma aggiunte
         aggiorna_truppe_stato(giocatore,dove,quante)
 
@@ -284,10 +242,11 @@ def inserisci_truppe(giocatore, pedine_da_posizionare, wb):
 # ------------------- VISUALIZZA STATI (NO MAIN) -------------------
 
 def visualizza_stati_numero(giocatore):
+    print(f"visualizzo stati di {giocatore}")
     ws = wb[giocatore]
     n_territori = 0
     territori_giocatore = []
-    for riga in (9, 23):  # righe dove ci sono i territori
+    for riga in range(9, 30):  # righe dove ci sono i territori
         nome_territorio = ws[f"A{riga}"].value
         if nome_territorio:  # <-- meglio controllare che non sia None
             territori_giocatore.append(nome_territorio)
@@ -297,6 +256,7 @@ def visualizza_stati_numero(giocatore):
 # ------------------- VISUALIZZA ARMATE PER STATI (NO MAIN) -------------------
 
 def trova_truppe_riga_stato(giocatore, stato):
+    print(f"🔍 Cerco truppe per {giocatore} in {stato}")
     ws = wb[giocatore]
     for riga in range(9, 30):
         if ws[f"A{riga}"].value == stato:
@@ -305,6 +265,7 @@ def trova_truppe_riga_stato(giocatore, stato):
 # ------------------- VISUALIZZA CARTE  -------------------
 
 def trova_carte(giocatore):
+    print(f"🔍 Cerco carte per {giocatore}")
     ws = wb[giocatore]
     lista_carte_giocatore = []
     for riga in range(9,30):
@@ -315,6 +276,7 @@ def trova_carte(giocatore):
 
 # ------------------- VISUALIZZA GIOCATORI CON PAESE (NO MAIN) -------------------
 def trova_giocatore(lista_giocatori, paese):
+    print(f"🔍 Cerco giocatore in {paese}")
     for giocatore in lista_giocatori:
         ws = wb[giocatore]
         for riga in range(9, 30):  # <-- così controlli tutte le righe da 9 a 22
@@ -325,6 +287,7 @@ def trova_giocatore(lista_giocatori, paese):
 
 # ------------------- AGGIORNA NUMERO TRUPPE (NO MAIN) -------------------
 def aggiorna_truppe_stato(giocatore, stato, n_truppe_aggiornate):
+    print(f"🔄 Aggiorno truppe per {giocatore} in {stato}")
     ws = wb[giocatore]
     _, riga = trova_truppe_riga_stato(giocatore, stato)
     
@@ -352,39 +315,32 @@ def aggiorna_truppe_stato(giocatore, stato, n_truppe_aggiornate):
 
 # Codice corretto
 def passaggio_stato(donatore, beneficiario, stato, n_truppe_attaccanti):
-
     ws_donatore = wb[donatore]
     ws_beneficiario = wb[beneficiario]
 
-    # Trova la riga del territorio nello stato donatore
-    n_truppe_donatore, riga_donatore = trova_truppe_riga_stato(donatore, stato)
+    _, riga_donatore = trova_truppe_riga_stato(donatore, stato)
     
     if riga_donatore is None:
         print(f"❌ {stato} non trovato tra i territori di {donatore}")
         return
 
-    # Chiedi quante truppe spostare. Almeno una truppa deve passare.
-    while True:
-        try:
-            n_truppe_spostate = int(input(f"Quante truppe vuoi spostar? (Minimo 1): "))
-            if 1 <= n_truppe_spostate <= n_truppe_donatore:
-                break
-            else:
-                print(f"⚠️ Numero di truppe non valido. Devono essere tra 1 e {n_truppe_donatore}.")
-        except ValueError:
-            print("❌ Inserisci un numero valido.")
+    n_truppe_spostate = random.randint(1, n_truppe_attaccanti - 1)
 
-    # Leggi i dati del territorio dal foglio del donatore
+    # Read the data from the donor's sheet
     nome = ws_donatore[f"A{riga_donatore}"].value
     continente = ws_donatore[f"B{riga_donatore}"].value
     simbolo = ws_donatore[f"C{riga_donatore}"].value
 
-    # Rimuovi il territorio e le truppe dal donatore
+    print("Remove the territory and troops from the donor")
     for col in ["A", "B", "C", "D"]:
         ws_donatore[f"{col}{riga_donatore}"].value = None
 
-    # Aggiungi il territorio e le truppe al beneficiario
+    # Add the territory and troops to the beneficiary
     ws_beneficiario.append([nome, continente, simbolo, n_truppe_spostate])
+
+    # Now, update the attacking player's original territory
+    aggiorna_truppe_stato(beneficiario, stato, n_truppe_spostate)
+    aggiorna_truppe_stato(donatore, stato, -n_truppe_spostate) # Remove from the original territory
 
     wb.save(EXCEL_PATH)
     print(f"✅ {stato} trasferito da {donatore} a {beneficiario} con successo, con {n_truppe_spostate} truppe.")
@@ -392,18 +348,28 @@ def passaggio_stato(donatore, beneficiario, stato, n_truppe_attaccanti):
 # ------------------- ATTACCO -------------------
 
 def attacco(lista_giocatori, giocatore):
-    territori_giocatore , _ = visualizza_stati_numero(giocatore)
-    stato_attacco = input(f"{giocatore}, quale stato vuoi attaccare? ").lower()
-    stato_partenza = input(f"Da quale stato parti? ").lower()
-
-    difensore = trova_giocatore(lista_giocatori, stato_attacco)
-
-    if stato_partenza not in territori_giocatore:
-        print(f"❌ Impossibile trovare lo stato di partenza di {giocatore}")
-        return
+    territori_giocatore, _ = visualizza_stati_numero(giocatore)
     
-    numero_truppe_stato_attaccante , _ = trova_truppe_riga_stato(giocatore, stato_partenza)
-    numero_truppe_stato_difensore , _ = trova_truppe_riga_stato(difensore, stato_attacco)
+    stato_partenza = random.choice(territori_giocatore)
+    
+    stato_attacco = None
+    difensore = None
+
+    territori_nemici = []
+    for altro_giocatore in lista_giocatori:
+        if altro_giocatore != giocatore:
+            territori_nemici.extend(visualizza_stati_numero(altro_giocatore)[0])
+            
+    if not territori_nemici:
+        print("❌ Non ci sono territori da attaccare. Salto il turno.")
+        return
+        
+    stato_attacco = random.choice(territori_nemici)
+    print(f"stato d'attacco {stato_attacco}")
+    difensore = trova_giocatore(lista_giocatori, stato_attacco)
+    print(f"difensore {difensore}")
+    numero_truppe_stato_attaccante, _ = trova_truppe_riga_stato(giocatore, stato_partenza)
+    numero_truppe_stato_difensore, _ = trova_truppe_riga_stato(difensore, stato_attacco)
 
     if numero_truppe_stato_attaccante <= 1:
         print(f"⚠️ {giocatore} non ha abbastanza truppe nello stato {stato_partenza}.")
@@ -411,15 +377,8 @@ def attacco(lista_giocatori, giocatore):
 
     # scelta dadi attaccante
     while True:
-        try:
-            n_dadi_attaccante = int(input("Con quanti dadi vuoi attaccare? (1-3) "))
-        except ValueError:
-            print("❌ Inserisci un numero valido.")
-            continue
-
-        if not (1 <= n_dadi_attaccante <= 3):
-            print("⚠️ Devi scegliere da 1 a 3 dadi.")
-            continue
+        n_dadi_attaccante = random.randint(1,3)
+        print(f"🎲 {giocatore} lancia {n_dadi_attaccante} dadi")
         if n_dadi_attaccante >= numero_truppe_stato_attaccante:
             print(f"⚠️ Hai solo {numero_truppe_stato_attaccante} truppe in {stato_partenza}, "
                   f"quindi puoi tirare al massimo {numero_truppe_stato_attaccante - 1} dadi.")
@@ -428,15 +387,7 @@ def attacco(lista_giocatori, giocatore):
 
     # scelta dadi difensore
     while True:
-        try:
-            n_dadi_difensore = int(input("Con quanti dadi vuoi difendere? (1-2) "))
-        except ValueError:
-            print("❌ Inserisci un numero valido.")
-            continue
-
-        if not (1 <= n_dadi_difensore <= 2):
-            print("⚠️ Devi scegliere da 1 a 2 dadi.")
-            continue
+        n_dadi_difensore = random.randint(1,2)
         if n_dadi_difensore > numero_truppe_stato_difensore:
             print(f"⚠️ {difensore} ha solo {numero_truppe_stato_difensore} truppe "
                   f"in {stato_attacco}, quindi può tirare al massimo {numero_truppe_stato_difensore} dadi.")
@@ -450,13 +401,15 @@ def attacco(lista_giocatori, giocatore):
     # Attaccante
     dadi_attaccante = []
     for i in range(n_dadi_attaccante):
-        dado = int(input(f"Inserisci numero dado {i+1} di {giocatore}: "))
+        dado = random.randint(1,6)
+        print(f"🎲 {giocatore} ha lanciato un {dado}")
         dadi_attaccante.append(dado)
 
     # Difensore
     dadi_difensore = []
     for i in range(n_dadi_difensore):
-        dado = int(input(f"Inserisci numero dado {i+1} di {difensore}: "))
+        dado = random.randint(1,6)
+        print(f"🎲 {difensore} ha lanciato un {dado}")
         dadi_difensore.append(dado)
 
     # Ordina i dadi dal più alto al più basso
@@ -588,6 +541,7 @@ if __name__ == "__main__":
     # ------------------- CICLO DI GIOCO -------------------
     turno = 0
     while len(lista_giocatori) > 1:
+        print(f"\n=== Turno {turno + 1} ===")
         giocatore = lista_giocatori[turno % len(lista_giocatori)]
         print(f"\n--- È il turno di {giocatore} ---")
         assegna_turno_truppe(giocatore, wb, file_continenti)
@@ -597,13 +551,9 @@ if __name__ == "__main__":
         conteggio = Counter(lista_carte_giocatore)
 
         if  conteggio["fante"] >= 3 or conteggio["cannone"] >= 3 or conteggio["cavallo"] >= 3 or (conteggio["fante"] >=1 and conteggio["cannone"] >=1 and conteggio["cavallo"] >=1):
-            scelta_carte = input(f"{giocatore} , hai il diritto a utilizzare un tris di carte , le vuoi usare ? (s/n) : ").lower().strip()
+            scelta_carte = "s"
             if scelta_carte == "s":
-                try:
-                    quale_tris = int(input("Quale tris? 1:(fante) 2:(cannone) 3:(cavallo) 4:(tris misto) "))
-                except ValueError:
-                    print("❌ Devi inserire un numero valido (1-4).")
-                    quale_tris = 0
+                quale_tris = random.randint(1, 4)
                 if quale_tris == 1:
                     if conteggio["fante"] >= 3:
                         print("benissimo hai 3 fanti nella lista")
@@ -640,11 +590,7 @@ if __name__ == "__main__":
 
         while True:
             # scelta azione
-            try:
-                scelta_azione = int(input("Vuoi (1) passare, (2) attaccare o (3) muovere truppe? "))
-            except ValueError:
-                print("Inserisci un numero valido.")
-                continue
+            scelta_azione = random.randint(1, 3)
 
             # ------------------- PASSA TURNO -------------------
             if scelta_azione == 1:
@@ -656,8 +602,8 @@ if __name__ == "__main__":
                 print("\n--- Modalità attacco ---")
                 while True:
                     attacco(lista_giocatori, giocatore)
-                    continua_attacco = input("Vuoi attaccare ancora? (s/n) ").lower()
-                    if continua_attacco != 's':
+                    continua_attacco = random.randint(1,2)
+                    if continua_attacco != 1:
                         break
                 print("--- Fine attacco ---")
 
@@ -665,29 +611,33 @@ if __name__ == "__main__":
             elif scelta_azione == 3:
                 print("\n--- Modalità spostamento truppe ---")
                 while True:
-                    stato_donatore = input("Da quale stato vuoi prelevare le truppe? ").lower()
-                    stato_beneficiario = input("In quale stato vuoi posizionare le truppe? ").lower()
-                    try:
-                        n_truppe_da_posizionare = int(input(f"Quante truppe vuoi spostare da {stato_donatore} a {stato_beneficiario}? "))
-                    except ValueError:
-                        print("Numero truppe non valido.")
-                        continue
+                    stati_disponibili, _ = visualizza_stati_numero(giocatore)
+                    while True:
+                        i_1 = random.randint(0, len(stati_disponibili) - 1)
+                        stato_donatore = stati_disponibili[i_1]
+                        truppe_disponibili, _ = trova_truppe_riga_stato(giocatore, stato_donatore)
 
-                    truppe_disponibili, _ = trova_truppe_riga_stato(giocatore, stato_donatore)
-                    if n_truppe_da_posizionare >= truppe_disponibili:
-                        print(f"Non puoi spostare più truppe di quante ce ne sono nello stato {stato_donatore}.")
-                        continue
+                        # Aggiungi questa condizione
+                        if truppe_disponibili > 1:
+                            break  # Esci dal ciclo una volta trovato un territorio con più di 1 truppa
+                    
+                    # Ora puoi selezionare il territorio di destinazione in modo sicuro
+                    while True:
+                        i_2 = random.randint(0, len(stati_disponibili) - 1)
+                        stato_beneficiario = stati_disponibili[i_2]
+                        if stato_beneficiario != stato_donatore:
+                            break
+                            
+                    n_truppe_da_posizionare = random.randint(1, truppe_disponibili - 1)
 
                     aggiorna_truppe_stato(giocatore, stato_donatore, -n_truppe_da_posizionare)
                     aggiorna_truppe_stato(giocatore, stato_beneficiario, n_truppe_da_posizionare)
 
-                    continua_spostamento = input("Vuoi spostare ancora delle truppe? (s/n) ").lower()
-                    if continua_spostamento != 's':
+                    continua_spostamento = random.randint(1,2)
+                    if continua_spostamento != 1:
                         break
-                print("--- Fine spostamento truppe ---")
 
-            else:
-                print("Scelta non valida. Riprova.")
+                print("--- Fine spostamento truppe ---")
 
         # ------------------- ELIMINAZIONE GIOCATORI -------------------
         lista_giocatori = eliminazione_giocatore(lista_giocatori, turno)
